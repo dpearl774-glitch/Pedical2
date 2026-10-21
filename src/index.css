@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+  }
+}
+
+@media print {
+  html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print, nav, header, aside, .sticky, button {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Printable container takes over normal flow cleanly without clipping */
+  #printable-ward-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Release fixed modal overlay constraints when printing */
+  .fixed {
+    position: static !important;
+    inset: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .overflow-y-auto, .overflow-hidden {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .shadow-2xl, .shadow-xl, .shadow-lg, .shadow-md, .shadow-xs {
+    box-shadow: none !important;
+  }
+
+  .print-break-page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  @page {
+    margin: 10mm;
+    size: auto;
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "pedical",
+  "description": "pedical: Inpatient pediatric anthropometry, WHO growth assessment, and SAM therapeutic milk calculator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
