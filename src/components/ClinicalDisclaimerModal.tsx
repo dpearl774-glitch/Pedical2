@@ -30,7 +30,7 @@ export const ClinicalDisclaimerModal: React.FC<ClinicalDisclaimerModalProps> = (
                 Clinical Reference &amp; Privacy Notice
               </h2>
               <div className="text-xs text-slate-500 font-mono">
-                pedical &middot; WHO 2013 Pediatric SAM Decision Aid
+                pedical &middot; WHO 2023 Acute Malnutrition Guidelines Aligned
               </div>
             </div>
           </div>
@@ -52,13 +52,14 @@ export const ClinicalDisclaimerModal: React.FC<ClinicalDisclaimerModalProps> = (
             <BookOpen className="w-4 h-4 text-blue-700 mt-0.5 shrink-0" />
             <div>
               <strong className="text-blue-950 block mb-0.5">
-                Open WHO Guidelines Reference
+                Open WHO Guidelines Reference (2023 Standards)
               </strong>
               <span>
-                pedical is a calculation reference tool built strictly according to published World Health
-                Organization (WHO 2013) Inpatient Management of Severe Acute Malnutrition protocols. It
-                is an arithmetic aid designed for qualified healthcare professionals (dietitians,
-                pediatricians, and clinical nurses).
+                pedical is a calculation reference tool aligned with the published World Health
+                Organization (WHO 2023) Guidelines on the Prevention and Management of Wasting and
+                Nutritional Oedema in Infants and Children Under 5 Years, alongside established inpatient
+                therapeutic milk formulation standards (F-75 &amp; F-100). It is an arithmetic aid designed
+                for qualified healthcare professionals (dietitians, pediatricians, and clinical nurses).
               </span>
             </div>
           </div>

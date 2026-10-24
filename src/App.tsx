@@ -20,12 +20,105 @@ import { ProtocolReferenceSection } from './components/ProtocolReferenceSection'
 import { PrintableBedsideCard } from './components/PrintableBedsideCard';
 import { WardOverview } from './components/WardOverview';
 import { ClinicalDisclaimerModal } from './components/ClinicalDisclaimerModal';
-import { Printer, ChevronRight, User, ShieldCheck, Lock } from 'lucide-react';
+import { OutpatientManagementSection } from './components/OutpatientManagementSection';
+import { QuickScreeningSection } from './components/QuickScreeningSection';
+import { ReSoMalManagementSection } from './components/ReSoMalManagementSection';
+import { SettingsModal } from './components/SettingsModal';
+import { PinLockScreen } from './components/PinLockScreen';
+import { ReminderNotificationBanner } from './components/ReminderNotificationBanner';
+import { RemindersModal } from './components/RemindersModal';
+import { useReminders } from './hooks/useReminders';
+import { AppSettings, loadAppSettings, saveAppSettings } from './utils/appSettings';
+import { Printer, ChevronRight, User, ShieldCheck, Lock, HeartHandshake, Activity, Droplets } from 'lucide-react';
 
 const STORAGE_KEY = 'pedical_ward_inpatients_v3';
 const DISCLAIMER_STORAGE_KEY = 'pedical_disclaimer_accepted_v1';
 
 export default function App() {
+  // App Settings & Customization
+  const [settings, setSettings] = useState<AppSettings>(() => loadAppSettings());
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+
+  // Bedside Security PIN Lock State
+  const [isLocked, setIsLocked] = useState<boolean>(false);
+  const lastActivityRef = React.useRef<number>(Date.now());
+
+  // Pediatric Reminder Engine Hook
+  const {
+    reminders,
+    dueCount,
+    activeBannerReminder,
+    addReminder,
+    markComplete,
+    snoozeReminder,
+    dismissBanner,
+    deleteReminder,
+    clearCompleted,
+  } = useReminders();
+  const [showRemindersModal, setShowRemindersModal] = useState<boolean>(false);
+
+  // Call navigator.storage.persist() on mount for browser storage persistence protection
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {
+        // ignore
+      });
+    }
+  }, []);
+
+  // Inactivity & Visibility Auto-Lock Engine
+  useEffect(() => {
+    if (!settings.pinLockEnabled) return;
+
+    const handleUserActivity = () => {
+      lastActivityRef.current = Date.now();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (settings.autoLockMinutes === 0) {
+          setIsLocked(true);
+        }
+      } else {
+        lastActivityRef.current = Date.now();
+      }
+    };
+
+    window.addEventListener('mousemove', handleUserActivity, { passive: true });
+    window.addEventListener('keydown', handleUserActivity, { passive: true });
+    window.addEventListener('touchstart', handleUserActivity, { passive: true });
+    window.addEventListener('scroll', handleUserActivity, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    const interval = setInterval(() => {
+      if (settings.autoLockMinutes > 0) {
+        const elapsedMinutes = (Date.now() - lastActivityRef.current) / 60000;
+        if (elapsedMinutes >= settings.autoLockMinutes) {
+          setIsLocked(true);
+        }
+      }
+    }, 10000);
+
+    return () => {
+      window.removeEventListener('mousemove', handleUserActivity);
+      window.removeEventListener('keydown', handleUserActivity);
+      window.removeEventListener('touchstart', handleUserActivity);
+      window.removeEventListener('scroll', handleUserActivity);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [settings.pinLockEnabled, settings.autoLockMinutes]);
+
+  // Emergency Security Wipe Handler: Permanently purges all localStorage
+  const handleEmergencyWipe = () => {
+    try {
+      localStorage.clear();
+    } catch {
+      // ignore
+    }
+    window.location.reload();
+  };
+
   // Disclaimer state
   const [showDisclaimerModal, setShowDisclaimerModal] = useState<boolean>(() => {
     try {
@@ -90,6 +183,11 @@ export default function App() {
   const handleOpenDisclaimer = () => {
     setIsVoluntaryDisclaimerReview(true);
     setShowDisclaimerModal(true);
+  };
+
+  const handleSaveSettings = (updated: AppSettings) => {
+    setSettings(updated);
+    saveAppSettings(updated);
   };
 
   // Instant deterministic calculation for active patient
@@ -187,8 +285,40 @@ export default function App() {
     setShowPrintModal(true);
   };
 
+  // Bridge from Quick Screener to Inpatient Admission
+  const handleAdmitFromScreener = (childData: Partial<CalculationInput>) => {
+    const nextCotNum = `Cot ${String(patients.length + 1).padStart(2, '0')}`;
+    const nextMrn = `Ref-${100 + patients.length + 1}`;
+    const newPatient: WardPatient = {
+      id: `cot-${Date.now()}`,
+      name: `Screened Child (${nextCotNum})`,
+      cotNumber: nextCotNum,
+      mrn: nextMrn,
+      admissionDate: new Date().toISOString().split('T')[0],
+      input: {
+        ...activePatient.input,
+        weight_kg: childData.weight_kg ?? 7.0,
+        height_cm: childData.height_cm ?? 70.0,
+        age_months: childData.age_months ?? 12,
+        sex: childData.sex ?? 'Boy',
+        edema_severity: childData.edema_severity ?? 'None',
+        therapeutic_phase: 'F-75 Stabilization',
+        cot_number: nextCotNum,
+        mrn: nextMrn,
+        patient_name: `Screened Child (${nextCotNum})`,
+      },
+    };
+    setPatients((prev) => [...prev, newPatient]);
+    setActivePatientId(newPatient.id);
+    setActiveTab('calculator');
+  };
+
+  const handleSendToOutpatientFromScreener = () => {
+    setActiveTab('outpatient');
+  };
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased pb-20 lg:pb-8">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-100 text-slate-900 flex flex-col font-sans antialiased pb-20 lg:pb-8">
       {/* Top Header with Interactive Patient Switcher & Notice */}
       <ClinicalHeader
         onPrint={() => {
@@ -199,50 +329,52 @@ export default function App() {
         onTabChange={(tab) => setActiveTab(tab)}
         onOpenReference={() => setActiveTab('reference')}
         onOpenDisclaimer={handleOpenDisclaimer}
+        onOpenSettings={() => setShowSettingsModal(true)}
+        facilityName={settings.facilityName}
         patients={patients}
         activePatientId={activePatientId}
         onSelectPatient={(id) => setActivePatientId(id)}
         onAdmitNewChild={() => setActiveTab('ward')}
+        dueReminderCount={dueCount}
+        activeReminderCount={reminders.filter((r) => !r.completed).length}
+        onOpenReminders={() => setShowRemindersModal(true)}
+        pinLockEnabled={settings.pinLockEnabled}
+        onLockScreen={() => setIsLocked(true)}
       />
 
-      {/* Mobile Sticky Inpatient Quick-Readout Bar */}
-      <div className="no-print lg:hidden sticky top-[53px] z-30 bg-slate-900 text-white px-3 py-2 border-b border-slate-800 shadow-xs flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center gap-1.5 truncate">
-          <span className="font-bold text-slate-300">{activePatient.cotNumber}:</span>
-          <span className="font-bold text-white truncate max-w-[90px]">{activePatient.name}</span>
-          <span className="text-slate-500">&middot;</span>
-          <span className="font-bold text-blue-400">{input.weight_kg}kg</span>
-          <span className="text-slate-500">&middot;</span>
-          <span className="text-emerald-400 font-bold">
-            {evaluation.feedingSummary.targetVolumePerFeed}mL q{input.feeding_interval_hours}h
-          </span>
-        </div>
-        <div className="text-[11px] text-slate-400 shrink-0 font-sans ml-2">
-          {evaluation.feedingSummary.dailyVolume} mL/d
-        </div>
-      </div>
+      {/* Top Slide-Down Alert Banner for Due/Overdue SAM/MAM Reminders */}
+      <ReminderNotificationBanner
+        reminder={activeBannerReminder}
+        onMarkDone={markComplete}
+        onSnooze={snoozeReminder}
+        onDismiss={dismissBanner}
+        onOpenCenter={() => setShowRemindersModal(true)}
+      />
 
       {/* Main Content Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 overflow-x-hidden">
         {/* Desktop View Navigation Pill Tabs */}
-        <div className="hidden lg:flex items-center justify-between bg-white p-1.5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="hidden lg:flex items-center justify-between bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
           <div className="flex items-center gap-1 text-xs">
             {[
-              { id: 'ward', label: `Bedside Roster (${patients.length} Beds)` },
-              { id: 'calculator', label: `Bed Assessment (${activePatient.cotNumber})` },
-              { id: 'chart', label: 'Interactive WHO Growth Chart' },
-              { id: 'feeding', label: 'Feeding Targets' },
-              { id: 'recipe', label: 'Batch Recipe' },
-              { id: 'schedule', label: 'Bedside Log' },
-              { id: 'reference', label: 'Protocols & Guidelines' },
+              { id: 'screener', label: 'Screener' },
+              { id: 'ward', label: `Ward (${patients.length})` },
+              { id: 'calculator', label: 'Inpatient' },
+              { id: 'resomal', label: 'ReSoMal' },
+              { id: 'outpatient', label: 'Outpatient' },
+              { id: 'chart', label: 'Growth Chart' },
+              { id: 'feeding', label: 'Targets' },
+              { id: 'recipe', label: 'Recipe' },
+              { id: 'schedule', label: 'Feed Log' },
+              { id: 'reference', label: 'Protocols' },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-3.5 rounded-lg font-semibold transition-all ${
+                className={`py-1.5 px-3 rounded-lg font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-blue-700 text-white shadow-xs'
+                    ? 'bg-blue-700 text-white shadow-xs font-semibold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
@@ -258,15 +390,23 @@ export default function App() {
                 setPrintBatchMode(false);
                 setShowPrintModal(true);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print {activePatient.cotNumber} Worksheet</span>
+              <span>Print {activePatient.cotNumber}</span>
             </button>
           </div>
         </div>
 
-        {/* TAB 0: WARD ROSTER (Multi-Child Inpatient Management) */}
+        {/* TAB: QUICK SCREENER */}
+        {activeTab === 'screener' && (
+          <QuickScreeningSection
+            onAdmitToInpatient={handleAdmitFromScreener}
+            onSendToOutpatient={handleSendToOutpatientFromScreener}
+          />
+        )}
+
+        {/* TAB 0: WARD ROSTER */}
         {activeTab === 'ward' && (
           <WardOverview
             patients={patients}
@@ -282,26 +422,112 @@ export default function App() {
           />
         )}
 
-        {/* TAB 1: CALCULATOR (Inputs + Formatted Clinical Output) */}
+        {/* TAB 1: CALCULATOR */}
         {activeTab === 'calculator' && (
-          <div className="space-y-6">
-            {/* Active Bed Notification Banner (De-Identified) */}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-700" />
-                <span className="font-bold text-blue-950">
-                  Active Bed: {activePatient.cotNumber} &middot; {activePatient.name} (Case Ref: {activePatient.mrn})
+          <div className="space-y-4">
+            {/* Sticky Key Output Summary Bar */}
+            <div className="sticky top-[52px] sm:top-[58px] z-20 bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div>
+                  <div className="text-[10px] font-medium text-slate-500">
+                    Per feed
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg sm:text-xl font-bold text-slate-900">
+                      {evaluation.feedingSummary.targetVolumePerFeed}
+                    </span>
+                    <span className="text-xs font-medium text-blue-700">mL</span>
+                    <span className="text-[11px] text-slate-400 ml-1">
+                      q{input.feeding_interval_hours}h
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-6 w-px bg-slate-200" />
+
+                <div>
+                  <div className="text-[10px] font-medium text-slate-500">
+                    24h total
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg sm:text-xl font-bold text-slate-900">
+                      {evaluation.feedingSummary.dailyVolume}
+                    </span>
+                    <span className="text-xs text-slate-500">mL</span>
+                    <span className="text-[11px] text-slate-400 hidden sm:inline ml-1">
+                      ({evaluation.feedingSummary.mlPerKgPerDay} mL/kg)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Indicator Chip */}
+              <div className="flex items-center gap-1.5">
+                {evaluation.safety.rule2FluidOverloadHalted ? (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
+                    overload risk
+                  </span>
+                ) : evaluation.growthAssessment?.isSam || input.edema_severity !== 'None' ? (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
+                    SAM
+                  </span>
+                ) : evaluation.growthAssessment?.classificationStatus?.includes('Moderate') ? (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                    MAM
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {input.therapeutic_phase.split(' ')[0]}
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('feeding-target-section');
+                    el?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-xs font-medium text-blue-700 hover:underline px-1"
+                >
+                  Details &darr;
+                </button>
+              </div>
+            </div>
+
+            {/* Active Bed Bar */}
+            <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span className="font-semibold text-slate-800">
+                  {activePatient.cotNumber}: {activePatient.name}
                 </span>
-                <span className="text-slate-500 hidden sm:inline font-mono">
-                  &middot; Admitted {activePatient.admissionDate}
+                <span className="text-slate-400 hidden sm:inline">
+                  &middot; {activePatient.mrn}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveTab('ward')}
-                className="text-blue-700 hover:text-blue-900 font-bold text-xs"
+                className="text-blue-700 hover:underline font-medium text-xs shrink-0"
               >
-                Switch Bed in Roster
+                Switch
+              </button>
+            </div>
+
+            {/* ReSoMal Quick Notice */}
+            <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5">
+                <Droplets className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+                <span className="text-teal-950">
+                  <strong>Watery diarrhea:</strong> Standard ORS contraindicated. Administer <strong>ReSoMal</strong>.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('resomal')}
+                className="px-2.5 py-1 bg-teal-700 hover:bg-teal-800 text-white font-medium rounded-lg shrink-0 text-xs transition-colors self-start sm:self-auto min-h-[30px]"
+              >
+                Open ReSoMal &rarr;
               </button>
             </div>
 
@@ -309,6 +535,7 @@ export default function App() {
               input={input}
               onChange={handleUpdateInput}
               onReset={handleResetActivePatient}
+              showQuickPresets={settings.showQuickPresets}
             />
 
             <FormattedClinicalReport
@@ -317,6 +544,29 @@ export default function App() {
               onNavigateToChart={() => setActiveTab('chart')}
             />
           </div>
+        )}
+
+        {/* TAB: RESOMAL REHYDRATION (Ghana Health Service / UNICEF IMAM Protocol) */}
+        {activeTab === 'resomal' && (
+          <div className="space-y-6">
+            <ReSoMalManagementSection
+              initialWeightKg={input.weight_kg}
+              initialEdemaSeverity={input.edema_severity}
+              initialAgeMonths={input.age_months ?? 18}
+              cotNumber={activePatient.cotNumber}
+              patientName={activePatient.name}
+              onJumpToF75={() => setActiveTab('calculator')}
+            />
+          </div>
+        )}
+
+        {/* TAB: OUTPATIENT MANAGEMENT (OTP / CMAM / RUTF) */}
+        {activeTab === 'outpatient' && (
+          <OutpatientManagementSection
+            currentWardPatient={activePatient}
+            onNavigateToInpatientWard={() => setActiveTab('calculator')}
+            onNavigateToGrowthChart={() => setActiveTab('chart')}
+          />
         )}
 
         {/* TAB 2: INTERACTIVE WHO GROWTH CHART (Plottable Graphs) */}
@@ -363,7 +613,7 @@ export default function App() {
                 <h3 className="text-base font-bold text-slate-900">
                   Feeding Targets &middot; {activePatient.cotNumber}: {activePatient.name} ({input.therapeutic_phase})
                 </h3>
-                <span className="text-xs font-mono text-slate-500 font-semibold">
+                <span className="text-xs text-slate-500 font-semibold">
                   {input.weight_kg} kg &middot; {input.edema_severity} Edema
                 </span>
               </div>
@@ -371,9 +621,9 @@ export default function App() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200">
                   <div className="text-xs font-bold text-blue-900 uppercase">Target Per Feed</div>
-                  <div className="text-3xl font-mono font-bold text-blue-950 mt-1">
+                  <div className="text-3xl font-bold text-slate-900 mt-1">
                     {evaluation.feedingSummary.targetVolumePerFeed}
-                    <span className="text-sm font-sans font-normal text-blue-700 ml-1">mL</span>
+                    <span className="text-sm font-normal text-blue-700 ml-1">mL</span>
                   </div>
                   <div className="text-xs text-blue-800 mt-1">
                     q{evaluation.feedingSummary.feedingIntervalHours}h ({evaluation.feedingSummary.feedsPerDay} feeds/day)
@@ -382,9 +632,9 @@ export default function App() {
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="text-xs font-bold text-slate-700 uppercase">Total 24h Fluid</div>
-                  <div className="text-3xl font-mono font-bold text-slate-900 mt-1">
+                  <div className="text-3xl font-bold text-slate-900 mt-1">
                     {evaluation.feedingSummary.dailyVolume}
-                    <span className="text-sm font-sans font-normal text-slate-500 ml-1">mL/day</span>
+                    <span className="text-sm font-normal text-slate-500 ml-1">mL/day</span>
                   </div>
                   <div className="text-xs text-slate-600 mt-1">
                     {evaluation.feedingSummary.mlPerKgPerDay} mL/kg/day
@@ -393,9 +643,9 @@ export default function App() {
 
                 <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200">
                   <div className="text-xs font-bold text-amber-900 uppercase">Safe Minimum (80%)</div>
-                  <div className="text-3xl font-mono font-bold text-amber-950 mt-1">
+                  <div className="text-3xl font-bold text-amber-950 mt-1">
                     {evaluation.feedingSummary.safeMinimumVolume}
-                    <span className="text-sm font-sans font-normal text-amber-700 ml-1">mL/day</span>
+                    <span className="text-sm font-normal text-amber-700 ml-1">mL/day</span>
                   </div>
                   <div className="text-xs text-amber-800 mt-1">
                     {evaluation.feedingSummary.safeMinMlPerKg} mL/kg/day (NG tube watch threshold)
@@ -407,6 +657,9 @@ export default function App() {
             <BedsideFeedingSchedule
               feedingSummary={evaluation.feedingSummary}
               patientWeight={input.weight_kg}
+              patientName={activePatient.name}
+              cotNumber={activePatient.cotNumber}
+              therapeuticPhase={input.therapeutic_phase}
             />
           </div>
         )}
@@ -441,7 +694,7 @@ export default function App() {
                       Base Milk: {evaluation.recipe.milkBase.name} &middot; Scale Factor: {evaluation.recipe.scaleFactor}
                     </div>
                   </div>
-                  <span className="text-xs font-mono px-2.5 py-1 rounded bg-blue-50 text-blue-800 font-bold">
+                  <span className="text-xs px-2.5 py-1 rounded bg-blue-50 text-blue-800 font-bold">
                     {input.therapeutic_phase}
                   </span>
                 </div>
@@ -452,7 +705,7 @@ export default function App() {
                       <div className="text-slate-500 font-bold">1. Milk Base</div>
                       <div className="font-semibold text-slate-900">{evaluation.recipe.milkBase.name}</div>
                     </div>
-                    <div className="font-mono text-xl font-bold text-blue-900">
+                    <div className="text-xl font-bold text-slate-900">
                       {evaluation.recipe.milkBase.amount} {evaluation.recipe.milkBase.unit}
                     </div>
                   </div>
@@ -462,7 +715,7 @@ export default function App() {
                       <div className="text-slate-500 font-bold">2. Sugar</div>
                       <div className="font-semibold text-slate-900">Commercial White Sugar</div>
                     </div>
-                    <div className="font-mono text-xl font-bold text-blue-900">
+                    <div className="text-xl font-bold text-slate-900">
                       {evaluation.recipe.sugarGrams} g
                     </div>
                   </div>
@@ -472,7 +725,7 @@ export default function App() {
                       <div className="text-slate-500 font-bold">3. Vegetable Oil</div>
                       <div className="font-semibold text-slate-900">Refined cooking oil</div>
                     </div>
-                    <div className="font-mono text-xl font-bold text-blue-900">
+                    <div className="text-xl font-bold text-slate-900">
                       {evaluation.recipe.vegetableOilGrams} g
                     </div>
                   </div>
@@ -484,7 +737,7 @@ export default function App() {
                         {evaluation.recipe.cerealFlourGrams > 0 ? 'Milled rice / cereal' : 'None (0g for F-100)'}
                       </div>
                     </div>
-                    <div className="font-mono text-xl font-bold text-blue-900">
+                    <div className="text-xl font-bold text-slate-900">
                       {evaluation.recipe.cerealFlourGrams} g
                     </div>
                   </div>
@@ -494,7 +747,7 @@ export default function App() {
                       <div className="text-slate-500 font-bold">5. CMV Solution (Combined Mineral Vitamin)</div>
                       <div className="font-semibold text-slate-900">Liquid mineral mix (20 mL per 1,000 mL milk formula)</div>
                     </div>
-                    <div className="font-mono text-xl font-bold text-blue-900">
+                    <div className="text-xl font-bold text-slate-900">
                       {evaluation.recipe.cmvLiquidMl} mL
                     </div>
                   </div>
@@ -505,6 +758,16 @@ export default function App() {
                     Preparation Step:
                   </div>
                   <div>{evaluation.recipe.preparationStep}</div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('schedule')}
+                    className="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 min-h-[44px]"
+                  >
+                    <span>Open Feed Log &amp; Batch Custody Tracker &rarr;</span>
+                  </button>
                 </div>
               </div>
             ) : null}
@@ -517,6 +780,9 @@ export default function App() {
             <BedsideFeedingSchedule
               feedingSummary={evaluation.feedingSummary}
               patientWeight={input.weight_kg}
+              patientName={activePatient.name}
+              cotNumber={activePatient.cotNumber}
+              therapeuticPhase={input.therapeutic_phase}
             />
           </div>
         )}
@@ -561,9 +827,29 @@ export default function App() {
           evaluation={evaluation}
           allPatients={patients}
           isBatchMode={printBatchMode}
+          facilityName={settings.facilityName}
+          wardSubtitle={settings.wardSubtitle}
           onClose={() => setShowPrintModal(false)}
         />
       )}
+
+      {/* Settings & Customization Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        settings={settings}
+        onSave={handleSaveSettings}
+        onClose={() => setShowSettingsModal(false)}
+        onResetWard={() => {
+          setPatients(INITIAL_WARD_PATIENTS);
+          setActivePatientId(INITIAL_WARD_PATIENTS[0].id);
+        }}
+        onOpenPrintModal={() => {
+          setPrintBatchMode(false);
+          setShowPrintModal(true);
+        }}
+        onOpenDisclaimer={handleOpenDisclaimer}
+        patients={patients}
+      />
 
       {/* Clinical Disclaimer & Terms Modal */}
       <ClinicalDisclaimerModal
@@ -572,6 +858,32 @@ export default function App() {
         onClose={() => setShowDisclaimerModal(false)}
         isVoluntaryReview={isVoluntaryDisclaimerReview}
       />
+
+      {/* Pediatric Reminders Center Modal */}
+      <RemindersModal
+        isOpen={showRemindersModal}
+        onClose={() => setShowRemindersModal(false)}
+        reminders={reminders}
+        onAddReminder={addReminder}
+        onMarkComplete={markComplete}
+        onSnooze={snoozeReminder}
+        onDelete={deleteReminder}
+        onClearCompleted={clearCompleted}
+        patients={patients}
+        activePatientId={activePatientId}
+      />
+
+      {/* Bedside Security PIN Lock Screen Overlay (Zero Unauthorized Access) */}
+      {isLocked && settings.pinLockEnabled && (
+        <PinLockScreen
+          facilityName={settings.facilityName}
+          clinicianRole={settings.clinicianRole}
+          correctPin={settings.pinCode || '1234'}
+          recoveryKey={settings.recoveryKey}
+          onUnlock={() => setIsLocked(false)}
+          onEmergencyWipe={handleEmergencyWipe}
+        />
+      )}
     </div>
   );
 }

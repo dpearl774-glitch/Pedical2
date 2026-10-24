@@ -1,8 +1,20 @@
 /**
- * Clinical Decision-Support Engine for Inpatient Pediatric SAM Management
- * Implements strict WHO protocols, zero-hallucination deterministic calculations,
- * and physiological safety guardrails.
+ * Clinical Decision-Support Engine for Inpatient Pediatric Acute Malnutrition Management
+ * Implements the WHO 2023 Guideline on the Prevention and Management of Wasting and
+ * Nutritional Oedema (Acute Malnutrition) in Infants and Children Under 5 Years,
+ * alongside established WHO F-75/F-100 therapeutic milk formulation standards,
+ * zero-hallucination deterministic calculations, and physiological safety guardrails.
  */
+
+export const WHO_GUIDELINE_EDITION = 'WHO 2023 Guideline';
+export const WHO_GUIDELINE_FULL_TITLE =
+  'WHO guideline on the prevention and management of wasting and nutritional oedema (acute malnutrition) in infants and children under 5 years (2023)';
+export const WHO_FORMULA_STANDARD_REF =
+  'WHO Inpatient Management Protocols (F-75 Stabilization & F-100 Rehabilitation Standards)';
+export const GHANA_IMAM_GUIDELINE_TITLE =
+  'Ghana Health Service (GHS) / UNICEF National Guidelines for Integrated Management of Acute Malnutrition (IMAM) & CMAM Protocols';
+export const GHANA_MOH_GHS_EDITION = 'Ghana Health Service (GHS) / UNICEF IMAM Protocols';
+
 
 import {
   getWHOThresholds,
@@ -164,8 +176,8 @@ export function evaluateGrowthStatus(
   if (edema_severity === 'Mild/Moderate (+ / ++)' || edema_severity === 'Severe (+++)') {
     return {
       anthropometricProfile: { weight_kg, height_cm, sex, age_months },
-      classificationStatus: 'SEVERE ACUTE MALNUTRITION (SAM) via Clinical Edema',
-      diagnosticIndicator: 'Bilateral pitting edema present',
+      classificationStatus: 'ACUTE MALNUTRITION: Nutritional Oedema (WHO 2023)',
+      diagnosticIndicator: 'Bilateral pitting oedema present (inpatient stabilization required)',
       isSam: true,
       whoThresholds,
       zScoreCategory,
@@ -180,7 +192,7 @@ export function evaluateGrowthStatus(
   if (weight_kg < whoThresholds.sd3neg) {
     return {
       anthropometricProfile: { weight_kg, height_cm, sex, age_months },
-      classificationStatus: 'SEVERE ACUTE MALNUTRITION (SAM) via Severe Wasting (WHZ < -3)',
+      classificationStatus: 'ACUTE MALNUTRITION: Severe Wasting (WHZ < -3 SD, WHO 2023)',
       diagnosticIndicator:
         'Weight is below -3 Standard Deviations on the WHO Weight-for-Length Growth Standard',
       isSam: true,
@@ -196,8 +208,8 @@ export function evaluateGrowthStatus(
   // Otherwise: Moderate Malnutrition / Verify Clinical Criteria
   return {
     anthropometricProfile: { weight_kg, height_cm, sex, age_months },
-    classificationStatus: 'Moderate Malnutrition / Verify Clinical Criteria',
-    diagnosticIndicator: `Weight (${weight_kg.toFixed(1)} kg) is at or above -3 SD threshold (${whoThresholds.sd3neg.toFixed(1)} kg for ${height_cm} cm) with no bilateral pitting edema. Check mid-upper arm circumference (MUAC) and medical complications.`,
+    classificationStatus: 'Moderate Wasting / Clinical Verification (WHO 2023)',
+    diagnosticIndicator: `Weight (${weight_kg.toFixed(1)} kg) is at or above -3 SD threshold (${whoThresholds.sd3neg.toFixed(1)} kg for ${height_cm} cm) with no bilateral pitting oedema. Check mid-upper arm circumference (MUAC) and medical complications.`,
     isSam: false,
     whoThresholds,
     zScoreCategory,
@@ -421,13 +433,13 @@ export function generateClinicalDirective(
   if (therapeutic_phase === 'F-75 Stabilization') {
     return {
       therapeuticPhase: 'F-75 Stabilization',
-      directiveText: `Monitor intake closely. If a child takes less than the ${safeMinimumVolume} mL threshold for 2 consecutive feeds, evaluate for Nasogastric (NG) tube placement.`,
+      directiveText: `Monitor intake closely. If a child takes less than the ${safeMinimumVolume} mL threshold for 2 consecutive feeds, evaluate for Nasogastric (NG) tube placement. In accordance with WHO 2023 guidelines, assess appetite daily once medical complications stabilize to prepare for transition to RUTF or Phase 2.`,
     };
   } else {
     return {
       therapeuticPhase: 'F-100 Rehabilitation',
       directiveText:
-        'Ensure the child has completed a successful 48-hour transition protocol at uniform volumes before expanding to full catch-up milk amounts.',
+        'Ensure the child has completed a successful 48-hour transition protocol at uniform volumes. Per WHO 2023 guidelines, prioritize transition to Ready-to-Use Therapeutic Food (RUTF) as soon as appetite is sustained and oedema has resolved.',
     };
   }
 }
@@ -494,3 +506,133 @@ export function evaluatePatient(input: CalculationInput): FullEvaluationResult {
     timestamp: new Date().toISOString(),
   };
 }
+
+/**
+ * ReSoMal (Rehydration Solution for Malnutrition) Protocol Engine
+ * Standardized according to Ghana Health Service (GHS) IMAM & WHO Clinical Guidelines.
+ *
+ * Safe Administration Rationale:
+ * - SAM children have defective sodium pumps; intracellular sodium is high while serum potassium is low.
+ * - Standard Low-Osmolarity ORS contains 75 mmol/L Na+, which causes acute hypernatremic fluid overload and heart failure.
+ * - ReSoMal contains 45 mmol/L Na+, 40 mmol/L K+, plus zinc and magnesium.
+ * - In Ghana Health Service protocols, ReSoMal is given at 5 mL/kg q30m for the first 2 hours,
+ *   then 5-10 mL/kg/h alternating hourly with F-75 for up to 10 hours.
+ * - Strictly CONTRAINDICATED in edematous malnutrition (Kwashiorkor) unless confirmed cholera or profuse watery diarrhea.
+ */
+export interface ReSoMalProtocolResult {
+  weight_kg: number;
+  hasEdema: boolean;
+  isContraindicated: boolean;
+  contraindicationWarning?: string;
+  first2Hours: {
+    volumePer30Min: number; // 5 mL/kg every 30 mins
+    total2HourVolume: number; // 20 mL/kg over 2 hours
+    numberOfDoses: number; // 4 doses
+    frequencyText: string;
+  };
+  nextHoursAlternate: {
+    minHourlyRateMl: number; // 5 mL/kg/h
+    maxHourlyRateMl: number; // 10 mL/kg/h
+    alternatingScheduleText: string;
+    maxDurationHours: number; // 10 hours
+  };
+  looseStoolReplacement: {
+    childAgeGroup: '< 2 years' | '>= 2 years';
+    volumePerLooseStool: string;
+  };
+  recipe: {
+    whoOrsPackets: number; // 1 standard 1L packet
+    cleanWaterLiters: number; // 2.0 L
+    sugarGrams: number; // 50 g
+    cmvLiquidMl: number; // 40 mL
+    instructions: string;
+  };
+  safetyMonitoringChecklist: {
+    rule: string;
+    trigger: string;
+    action: string;
+  }[];
+}
+
+export function calculateReSoMalProtocol(
+  weight_kg: number,
+  edema_severity: EdemaSeverity,
+  age_months?: number
+): ReSoMalProtocolResult {
+  const hasEdema = edema_severity === 'Mild/Moderate (+ / ++)' || edema_severity === 'Severe (+++)';
+  const isContraindicated = hasEdema;
+
+  const contraindicationWarning = hasEdema
+    ? 'CRITICAL CONTRAINDICATION: Bilateral pitting oedema (Kwashiorkor / Marasmic Kwashiorkor) is present. In Ghana Health Service (GHS) IMAM & WHO protocols, ReSoMal and IV rehydration fluids are strictly contraindicated in edematous malnutrition unless there is proven, profuse watery diarrhea or cholera with hypovolemic dehydration. Malnourished children with edema are already fluid-expanded; administering ReSoMal precipitates fatal acute heart failure and pulmonary edema.'
+    : undefined;
+
+  // First 2 hours: 5 mL/kg every 30 minutes for 2 hours (4 doses = 20 mL/kg total)
+  const volumePer30Min = Math.round(weight_kg * 5);
+  const total2HourVolume = volumePer30Min * 4;
+
+  // Next hours: 5 to 10 mL/kg/hour alternating with F-75
+  const minHourlyRateMl = Math.round(weight_kg * 5);
+  const maxHourlyRateMl = Math.round(weight_kg * 10);
+
+  const childAgeGroup: '< 2 years' | '>= 2 years' =
+    age_months !== undefined && age_months < 24 ? '< 2 years' : '>= 2 years';
+
+  const volumePerLooseStool =
+    childAgeGroup === '< 2 years'
+      ? '50 – 100 mL after each loose watery stool'
+      : '100 – 200 mL after each loose watery stool';
+
+  return {
+    weight_kg,
+    hasEdema,
+    isContraindicated,
+    contraindicationWarning,
+    first2Hours: {
+      volumePer30Min,
+      total2HourVolume,
+      numberOfDoses: 4,
+      frequencyText: `Give ${volumePer30Min} mL every 30 minutes orally (cup & spoon) or by NG tube for the first 2 hours (${total2HourVolume} mL total).`,
+    },
+    nextHoursAlternate: {
+      minHourlyRateMl,
+      maxHourlyRateMl,
+      alternatingScheduleText: `Give ${minHourlyRateMl}–${maxHourlyRateMl} mL/hour alternating hourly with F-75 therapeutic milk (Hour 3: ReSoMal, Hour 4: F-75, Hour 5: ReSoMal, Hour 6: F-75...) for up to 10 hours maximum until rehydration is complete.`,
+      maxDurationHours: 10,
+    },
+    looseStoolReplacement: {
+      childAgeGroup,
+      volumePerLooseStool,
+    },
+    recipe: {
+      whoOrsPackets: 1,
+      cleanWaterLiters: 2.0,
+      sugarGrams: 50,
+      cmvLiquidMl: 40,
+      instructions:
+        'Dissolve 1 standard 1-Litre WHO Low-Osmolarity ORS packet into 2.0 Litres of cooled, safe boiled water (NOT 1 Litre). Add 50 g of white commercial sugar (approx. 10 level teaspoons) and 40 mL of Combined Mineral Vitamin (CMV) liquid solution (or 1 sachet ReSoMal mineral mix). Mix thoroughly. Never administer standard undiluted ORS because its high sodium content (75 mmol/L) induces fatal hypernatremic fluid overload.',
+    },
+    safetyMonitoringChecklist: [
+      {
+        rule: 'Respiratory Rate (RR) Surveillance',
+        trigger: 'RR increases by >= 5 breaths per minute from baseline',
+        action: 'STOP ReSoMal immediately. Switch to maintenance F-75 or observe.',
+      },
+      {
+        rule: 'Pulse Rate Surveillance',
+        trigger: 'Pulse increases by >= 15 beats per minute from baseline',
+        action: 'STOP ReSoMal immediately. Indicates cardiovascular volume overload.',
+      },
+      {
+        rule: 'Oedema & Venous Engorgement Check',
+        trigger: 'Puffy eyelids, facial swelling, engorged neck veins, or enlarging liver appear',
+        action: 'STOP all oral and IV fluids immediately. Give 1 mg/kg IV Furosemide if acute pulmonary edema.',
+      },
+      {
+        rule: 'Assessment Interval',
+        trigger: 'First 2 hours: assess every 30 minutes; Hours 3 to 10: assess hourly',
+        action: 'Record pulse, respiration, stool frequency, vomiting, and hydration signs on bedside flow sheet.',
+      },
+    ],
+  };
+}
+

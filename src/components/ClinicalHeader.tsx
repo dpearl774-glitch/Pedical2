@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Printer, BookOpen, ChevronDown, Check, UserPlus, ShieldCheck } from 'lucide-react';
+import { Printer, BookOpen, ChevronDown, Check, UserPlus, ShieldCheck, Settings, Bell, Lock } from 'lucide-react';
 import { WardPatient } from '../data/wardPatients';
 
 interface ClinicalHeaderProps {
@@ -8,10 +8,17 @@ interface ClinicalHeaderProps {
   onTabChange: (tab: string) => void;
   onOpenReference: () => void;
   onOpenDisclaimer?: () => void;
+  onOpenSettings?: () => void;
+  facilityName?: string;
   patients: WardPatient[];
   activePatientId: string;
   onSelectPatient: (patientId: string) => void;
   onAdmitNewChild: () => void;
+  dueReminderCount?: number;
+  activeReminderCount?: number;
+  onOpenReminders?: () => void;
+  pinLockEnabled?: boolean;
+  onLockScreen?: () => void;
 }
 
 export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
@@ -20,10 +27,17 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
   onTabChange,
   onOpenReference,
   onOpenDisclaimer,
+  onOpenSettings,
+  facilityName,
   patients,
   activePatientId,
   onSelectPatient,
   onAdmitNewChild,
+  dueReminderCount = 0,
+  activeReminderCount = 0,
+  onOpenReminders,
+  pinLockEnabled = false,
+  onLockScreen,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -40,64 +54,76 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const badgeCount = dueReminderCount > 0 ? dueReminderCount : activeReminderCount;
+  const isDueBadge = dueReminderCount > 0;
+
   return (
     <header className="no-print bg-slate-900 border-b border-slate-800 sticky top-0 z-40 text-slate-100">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-3 sm:px-6 py-2.5">
-        {/* Zone 1: Brand wordmark (pedical) + Quick Patient Switcher */}
-        <div className="flex items-center gap-3 shrink-0">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-1 sm:gap-2 px-2 sm:px-6 py-1 sm:py-1.5">
+        {/* Left: App title / logo */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           <button
             type="button"
             onClick={() => onTabChange('ward')}
-            className="flex items-center gap-2 group text-left"
+            className="flex items-center gap-1.5 group text-left min-h-[36px] py-1 px-1 rounded-lg hover:bg-slate-800/80 transition-colors"
+            title="Ward roster"
           >
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm tracking-tight shadow-xs group-hover:bg-blue-500 transition-colors">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-blue-500 transition-colors">
               p
             </div>
-            <div>
-              <span className="text-lg font-black tracking-tight text-white lowercase">
-                pedical
-              </span>
-              <span className="hidden sm:inline-block text-[10px] font-mono text-slate-400 ml-2">
-                WHO Clinical Reference
-              </span>
-            </div>
+            <span className="text-sm sm:text-base font-bold tracking-tight text-white lowercase">
+              pedical
+            </span>
           </button>
+        </div>
 
-          {/* Quick Patient Selector Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+        {/* Center: Active Cot / Patient Identifier Badge (compact on mobile) */}
+        <div className="flex items-center justify-center flex-1 max-w-[135px] xs:max-w-[170px] sm:max-w-xs md:max-w-sm px-0.5">
+          <div className="relative w-full" ref={dropdownRef}>
             <button
               type="button"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs text-slate-200 transition-all font-mono"
-              title="Switch Inpatient Bed"
+              className="w-full flex items-center justify-between gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all min-h-[34px] sm:min-h-[38px]"
+              title="Switch bed"
+              aria-label="Active patient selector"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-              <span className="font-bold text-white max-w-[110px] sm:max-w-[140px] truncate">
-                {activePatient ? `${activePatient.cotNumber}: ${activePatient.name}` : 'Select Bed'}
-              </span>
-              <span className="text-[10px] text-slate-400 hidden md:inline">
-                ({activePatient?.input.weight_kg}kg)
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-1.5 truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                <div className="truncate text-left">
+                  <div className="text-[11px] sm:text-xs font-semibold text-white truncate leading-tight">
+                    {activePatient ? (
+                      <>
+                        <span>{activePatient.cotNumber}</span>
+                        <span className="text-slate-400 font-normal ml-1 truncate">
+                          {activePatient.name.split(' ')[0]}
+                        </span>
+                      </>
+                    ) : (
+                      'Beds'
+                    )}
+                  </div>
+                </div>
+              </div>
+              <ChevronDown className="w-3 h-3 text-slate-400 shrink-0 ml-0.5" />
             </button>
 
             {dropdownOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl py-1 z-50 text-xs">
-                <div className="px-3 py-2 border-b border-slate-800 text-[10px] font-bold uppercase text-slate-400 tracking-wider flex justify-between items-center">
-                  <span>De-Identified Inpatients ({patients.length})</span>
+              <div className="absolute left-1/2 -translate-x-1/2 mt-1 w-64 sm:w-72 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-1 z-50 text-xs">
+                <div className="px-3 py-2 border-b border-slate-800 text-[11px] font-semibold text-slate-400 flex justify-between items-center">
+                  <span>Inpatients ({patients.length})</span>
                   <button
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
                       onTabChange('ward');
                     }}
-                    className="text-blue-400 hover:text-blue-300 capitalize text-[11px]"
+                    className="text-blue-400 hover:text-blue-300 font-medium text-xs"
                   >
-                    View Roster
+                    View roster
                   </button>
                 </div>
 
-                <div className="max-h-60 overflow-y-auto py-1">
+                <div className="max-h-60 overflow-y-auto py-1 divide-y divide-slate-800/60">
                   {patients.map((p) => {
                     const isSelected = p.id === activePatientId;
                     return (
@@ -108,37 +134,36 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
                           onSelectPatient(p.id);
                           setDropdownOpen(false);
                         }}
-                        className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-slate-800 transition-colors ${
-                          isSelected ? 'bg-blue-900/40 text-blue-300 font-bold' : 'text-slate-300'
+                        className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-slate-800 transition-colors min-h-[40px] ${
+                          isSelected ? 'bg-blue-950/60 text-blue-200 font-medium' : 'text-slate-300'
                         }`}
                       >
                         <div className="truncate pr-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-slate-400">{p.cotNumber}:</span>
+                          <div className="flex items-center gap-1.5 text-xs text-white">
+                            <span className="text-slate-400">{p.cotNumber}:</span>
                             <span className="truncate">{p.name}</span>
                           </div>
-                          <div className="text-[10px] text-slate-500 font-mono">
-                            {p.input.weight_kg}kg &middot; {p.input.therapeutic_phase.split(' ')[0]} &middot;{' '}
-                            {p.input.edema_severity}
+                          <div className="text-[10px] text-slate-400">
+                            {p.input.weight_kg} kg &middot; {p.input.therapeutic_phase.split(' ')[0]}
                           </div>
                         </div>
-                        {isSelected && <Check className="w-4 h-4 text-blue-400 shrink-0" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="p-2 border-t border-slate-800">
+                <div className="p-1.5 border-t border-slate-800">
                   <button
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
                       onAdmitNewChild();
                     }}
-                    className="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                    className="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors text-xs min-h-[36px]"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
-                    <span>Add Inpatient Bed</span>
+                    <span>Add bed</span>
                   </button>
                 </div>
               </div>
@@ -146,75 +171,87 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
           </div>
         </div>
 
-        {/* Zone 2: Desktop clean single-line nav tabs */}
-        <nav className="hidden lg:flex items-center gap-1 text-xs font-medium text-slate-300">
-          {[
-            { id: 'ward', label: `Ward Roster (${patients.length})` },
-            { id: 'calculator', label: 'Child Assessment' },
-            { id: 'chart', label: 'WHO Growth Chart' },
-            { id: 'feeding', label: 'Feeding Targets' },
-            { id: 'recipe', label: 'Batch Recipe' },
-            { id: 'schedule', label: 'Bedside Log' },
-          ].map((tab) => (
+        {/* Right: Security Lock, Reminders Bell, Settings */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* 1-Tap Bedside Lock */}
+          {pinLockEnabled && onLockScreen && (
             <button
-              key={tab.id}
               type="button"
-              onClick={() => onTabChange(tab.id)}
-              className={`px-3 py-1.5 rounded-md transition-all whitespace-nowrap shrink-0 ${
-                activeTab === tab.id
-                  ? 'bg-slate-800 text-white font-bold shadow-xs'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-              }`}
+              onClick={onLockScreen}
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 hover:text-white transition-colors shrink-0"
+              title="Lock screen"
+              aria-label="Lock screen"
             >
-              {tab.label}
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
             </button>
-          ))}
-          <button
-            type="button"
-            onClick={onOpenReference}
-            className={`px-3 py-1.5 rounded-md transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-              activeTab === 'reference'
-                ? 'bg-slate-800 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>References</span>
-          </button>
-        </nav>
+          )}
 
-        {/* Zone 3: Disclaimer & Print Action */}
-        <div className="flex items-center gap-2 shrink-0">
-          {onOpenDisclaimer && (
+          {/* Pediatric Reminders Bell with persistent number badge */}
+          {onOpenReminders && (
             <button
               type="button"
-              onClick={onOpenDisclaimer}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 flex items-center gap-1 text-xs transition-colors"
-              title="Clinical Disclaimer & Privacy Notice"
+              onClick={onOpenReminders}
+              className="relative w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:text-white transition-colors shrink-0"
+              title="Reminders"
+              aria-label="Reminders"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-              <span className="hidden xl:inline text-[11px]">Notice</span>
+              <Bell className="w-3.5 h-3.5 text-blue-400" />
+              {badgeCount > 0 && (
+                <span
+                  className={`absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 rounded-full text-white font-bold text-[9px] flex items-center justify-center border border-slate-900 shadow-xs ${
+                    isDueBadge ? 'bg-rose-600 animate-pulse' : 'bg-blue-600'
+                  }`}
+                >
+                  {badgeCount > 9 ? '9+' : badgeCount}
+                </span>
+              )}
             </button>
           )}
 
           <button
             type="button"
             onClick={onOpenReference}
-            className="lg:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
-            title="Protocol References"
+            className="hidden md:flex px-2 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white items-center gap-1 text-xs transition-colors min-h-[34px]"
+            title="Protocols"
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+            <span>Protocols</span>
           </button>
+
+          {onOpenDisclaimer && (
+            <button
+              type="button"
+              onClick={onOpenDisclaimer}
+              className="hidden lg:flex px-2 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white items-center gap-1 text-xs transition-colors min-h-[34px]"
+              title="Notice"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Notice</span>
+            </button>
+          )}
 
           <button
             type="button"
             onClick={onPrint}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors whitespace-nowrap shrink-0 shadow-xs min-h-[36px]"
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors whitespace-nowrap shrink-0 min-h-[34px]"
+            title="Print worksheet"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Print Worksheet</span>
-            <span className="sm:hidden">Print</span>
+            <span className="hidden lg:inline">Print</span>
           </button>
+
+          {/* Settings */}
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:text-white transition-colors shrink-0"
+              title="Settings"
+              aria-label="Settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-blue-400" />
+            </button>
+          )}
         </div>
       </div>
     </header>

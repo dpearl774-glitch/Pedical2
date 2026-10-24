@@ -7,6 +7,8 @@ interface PrintableBedsideCardProps {
   evaluation: FullEvaluationResult;
   allPatients?: WardPatient[];
   isBatchMode?: boolean;
+  facilityName?: string;
+  wardSubtitle?: string;
   onClose: () => void;
 }
 
@@ -14,6 +16,8 @@ export const PrintableBedsideCard: React.FC<PrintableBedsideCardProps> = ({
   evaluation,
   allPatients = [],
   isBatchMode = false,
+  facilityName,
+  wardSubtitle,
   onClose,
 }) => {
   const [printMode, setPrintMode] = useState<'single' | 'batch' | 'census'>(
@@ -70,7 +74,7 @@ export const PrintableBedsideCard: React.FC<PrintableBedsideCardProps> = ({
   };
 
   const copyPrescriptionText = () => {
-    const text = `pedical INPATIENT NUTRITION ORDER
+    const text = `pedical INPATIENT NUTRITION ORDER (WHO 2023 Guidelines Aligned)
 Date: ${new Date().toLocaleDateString()}
 Patient: ${evaluation.input.patient_name || 'Inpatient'} (${evaluation.input.cot_number || 'Cot 1'})
 MRN: ${evaluation.input.mrn || 'N/A'}
@@ -198,14 +202,14 @@ Directive: ${evaluation.clinicalDirective.directiveText}`;
             <div className="p-4 bg-white text-slate-900 space-y-4 font-sans">
               <div className="border-b-2 border-slate-900 pb-2 flex justify-between items-start">
                 <div>
-                  <div className="text-[11px] font-mono font-bold uppercase text-slate-600">
-                    pedical &middot; WHO PROTOCOL INPATIENT ROSTER &amp; BEDSIDE SUMMARY
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    {facilityName || 'pedical'} &middot; {wardSubtitle || 'WHO PROTOCOL INPATIENT ROSTER & BEDSIDE SUMMARY'}
                   </div>
-                  <h2 className="text-xl font-black text-slate-900 mt-0.5">
+                  <h2 className="text-xl font-bold text-slate-900 mt-0.5">
                     INPATIENT BEDSIDE SUMMARY &amp; FEEDING ESTIMATES
                   </h2>
                 </div>
-                <div className="text-right text-xs font-mono">
+                <div className="text-right text-xs">
                   <div>Date: {new Date().toLocaleDateString()}</div>
                   <div className="text-slate-500 font-bold">{allPatients.length} De-Identified Beds</div>
                 </div>
@@ -229,18 +233,18 @@ Directive: ${evaluation.clinicalDirective.directiveText}`;
                   {allPatients.map((p) => {
                     const pEval = evaluatePatient(p.input);
                     return (
-                      <tr key={p.id} className="border-b border-slate-200 hover:bg-slate-50 font-mono">
+                      <tr key={p.id} className="border-b border-slate-200 hover:bg-slate-50">
                         <td className="p-2 border border-slate-300 font-bold text-blue-900">
                           {p.cotNumber}
                         </td>
                         <td className="p-2 border border-slate-300 font-sans">
                           <strong>{p.name}</strong>
-                          <div className="text-[10px] text-slate-500 font-mono">{p.mrn}</div>
+                          <div className="text-[10px] text-slate-500 font-medium">{p.mrn}</div>
                         </td>
-                        <td className="p-2 border border-slate-300">
+                        <td className="p-2 border border-slate-300 font-medium">
                           {p.input.sex || '--'} / {p.input.age_months || '--'}m
                         </td>
-                        <td className="p-2 border border-slate-300 font-bold">
+                        <td className="p-2 border border-slate-300 font-bold text-slate-900">
                           {p.input.weight_kg} kg
                         </td>
                         <td className="p-2 border border-slate-300">
@@ -293,6 +297,8 @@ Directive: ${evaluation.clinicalDirective.directiveText}`;
                     patientName={p.name}
                     cotNumber={p.cotNumber}
                     mrn={p.mrn}
+                    facilityName={facilityName}
+                    wardSubtitle={wardSubtitle}
                   />
                 </div>
               );
@@ -303,6 +309,8 @@ Directive: ${evaluation.clinicalDirective.directiveText}`;
               patientName={evaluation.input.patient_name}
               cotNumber={evaluation.input.cot_number}
               mrn={evaluation.input.mrn}
+              facilityName={facilityName}
+              wardSubtitle={wardSubtitle}
             />
           )}
         </div>
@@ -316,6 +324,8 @@ interface SinglePatientCardProps {
   patientName?: string;
   cotNumber?: string;
   mrn?: string;
+  facilityName?: string;
+  wardSubtitle?: string;
 }
 
 const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
@@ -323,6 +333,8 @@ const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
   patientName = 'Pediatric Patient',
   cotNumber = 'Cot 1',
   mrn = 'PED-2026-081',
+  facilityName,
+  wardSubtitle,
 }) => {
   const { input, growthAssessment, feedingSummary, recipe, safety, clinicalDirective } = evaluation;
 
@@ -331,49 +343,49 @@ const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
       {/* Header */}
       <div className="flex items-start justify-between border-b-2 border-slate-900 pb-3">
         <div>
-          <div className="text-[11px] uppercase font-mono font-bold tracking-wider text-slate-600">
-            pedical &middot; WHO 2013 INPATIENT SAM PROTOCOL &middot; BEDSIDE WORKSHEET
+          <div className="text-[11px] uppercase font-bold tracking-wider text-slate-600">
+            {facilityName || 'pedical'} &middot; {wardSubtitle || 'WHO 2023 ACUTE MALNUTRITION PROTOCOL &middot; BEDSIDE WORKSHEET'}
           </div>
-          <h2 className="text-xl font-black tracking-tight text-slate-900 mt-0.5">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 mt-0.5">
             BEDSIDE NUTRITIONAL CALCULATION WORKSHEET
           </h2>
           <div className="text-xs text-slate-600 mt-0.5">
-            Bed Identifier: <strong>{patientName}</strong> &middot; Case Ref: <span className="font-mono">{mrn}</span>
+            Bed Identifier: <strong>{patientName}</strong> &middot; Case Ref: <span className="font-semibold text-slate-900">{mrn}</span>
           </div>
         </div>
-        <div className="text-right text-xs font-mono">
+        <div className="text-right text-xs">
           <div>Date: {new Date().toLocaleDateString()}</div>
-          <div className="font-black text-blue-900 text-sm mt-1 px-2.5 py-0.5 border border-slate-900 rounded inline-block">
+          <div className="font-bold text-blue-900 text-sm mt-1 px-2.5 py-0.5 border border-slate-900 rounded inline-block">
             {cotNumber}
           </div>
         </div>
       </div>
 
       {/* Patient Profile */}
-      <div className="grid grid-cols-4 gap-2 bg-slate-100 p-3 rounded text-xs font-mono">
+      <div className="grid grid-cols-4 gap-2 bg-slate-100 p-3 rounded-lg text-xs">
         <div>
-          <span className="text-slate-500 block text-[10px]">WEIGHT</span>
-          <strong className="text-sm">{input.weight_kg} kg</strong>
+          <span className="text-slate-500 block text-[10px] font-semibold">WEIGHT</span>
+          <strong className="text-sm font-bold text-slate-900">{input.weight_kg} kg</strong>
         </div>
         <div>
-          <span className="text-slate-500 block text-[10px]">LENGTH</span>
-          <strong className="text-sm">{input.height_cm ?? '--'} cm</strong>
+          <span className="text-slate-500 block text-[10px] font-semibold">LENGTH</span>
+          <strong className="text-sm font-bold text-slate-900">{input.height_cm ?? '--'} cm</strong>
         </div>
         <div>
-          <span className="text-slate-500 block text-[10px]">SEX / AGE</span>
-          <strong className="text-sm">
+          <span className="text-slate-500 block text-[10px] font-semibold">SEX / AGE</span>
+          <strong className="text-sm font-bold text-slate-900">
             {input.sex ?? '--'} / {input.age_months ?? '--'}m
           </strong>
         </div>
         <div>
-          <span className="text-slate-500 block text-[10px]">EDEMA SEVERITY</span>
-          <strong className="text-sm">{input.edema_severity}</strong>
+          <span className="text-slate-500 block text-[10px] font-semibold">EDEMA SEVERITY</span>
+          <strong className="text-sm font-bold text-slate-900">{input.edema_severity}</strong>
         </div>
       </div>
 
       {/* Diagnostic status */}
       {growthAssessment && (
-        <div className="border border-slate-300 p-2.5 rounded text-xs">
+        <div className="border border-slate-300 p-2.5 rounded-lg text-xs">
           <div>
             <strong>Classification Status:</strong> {growthAssessment.classificationStatus}
           </div>
@@ -384,37 +396,37 @@ const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
       )}
 
       {/* Prescribed Feeding Regimen */}
-      <div className="border-2 border-blue-900 bg-blue-50/40 p-4 rounded-lg">
+      <div className="border-2 border-blue-900 bg-blue-50/40 p-4 rounded-xl">
         <div className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">
           WHO Protocol Target Regimen ({input.therapeutic_phase})
         </div>
         <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="p-2 bg-white rounded border border-blue-200">
-            <div className="text-[10px] text-slate-500 uppercase">Target Per Feed</div>
-            <div className="text-2xl font-mono font-black text-blue-900">
-              {feedingSummary.targetVolumePerFeed} mL
+          <div className="p-3 bg-white rounded-lg border border-blue-200">
+            <div className="text-[10px] text-slate-500 uppercase font-semibold">Target Per Feed</div>
+            <div className="text-2xl font-bold text-blue-900">
+              {feedingSummary.targetVolumePerFeed} <span className="text-sm font-medium">mL</span>
             </div>
-            <div className="text-[10px] text-blue-800">
+            <div className="text-[11px] text-blue-800 font-medium">
               q{feedingSummary.feedingIntervalHours}h ({feedingSummary.feedsPerDay} feeds/day)
             </div>
           </div>
 
-          <div className="p-2 bg-white rounded border border-blue-200">
-            <div className="text-[10px] text-slate-500 uppercase">Total 24h Volume</div>
-            <div className="text-2xl font-mono font-black text-slate-900">
-              {feedingSummary.dailyVolume} mL
+          <div className="p-3 bg-white rounded-lg border border-blue-200">
+            <div className="text-[10px] text-slate-500 uppercase font-semibold">Total 24h Volume</div>
+            <div className="text-2xl font-bold text-slate-900">
+              {feedingSummary.dailyVolume} <span className="text-sm font-medium">mL</span>
             </div>
-            <div className="text-[10px] text-slate-600">
+            <div className="text-[11px] text-slate-600 font-medium">
               {feedingSummary.mlPerKgPerDay} mL/kg/day
             </div>
           </div>
 
-          <div className="p-2 bg-white rounded border border-amber-300 bg-amber-50/50">
-            <div className="text-[10px] text-amber-800 uppercase">Critical Min (80%)</div>
-            <div className="text-2xl font-mono font-black text-amber-950">
-              {feedingSummary.safeMinimumVolume} mL
+          <div className="p-3 bg-white rounded-lg border border-amber-300 bg-amber-50/50">
+            <div className="text-[10px] text-amber-800 uppercase font-semibold">Critical Min (80%)</div>
+            <div className="text-2xl font-bold text-amber-950">
+              {feedingSummary.safeMinimumVolume} <span className="text-sm font-medium">mL</span>
             </div>
-            <div className="text-[10px] text-amber-800">NG tube watch</div>
+            <div className="text-[11px] text-amber-800 font-medium">NG tube watch</div>
           </div>
         </div>
       </div>
@@ -425,7 +437,7 @@ const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
           <div className="font-bold text-slate-900">
             Manual 24-Hour Batch Recipe ({recipe.dailyVolume} mL total)
           </div>
-          <div className="grid grid-cols-2 gap-2 font-mono">
+          <div className="grid grid-cols-2 gap-2 text-slate-700">
             <div>
               1. {recipe.milkBase.name}:{' '}
               <strong>

@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Clock,
 } from 'lucide-react';
+import { ClinicalNumberInput } from './ClinicalNumberInput';
 
 interface WardOverviewProps {
   patients: WardPatient[];
@@ -107,11 +108,11 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-700" />
               <h2 className="text-base font-bold text-slate-900 tracking-tight">
-                Inpatient Bedside Feeding Roster (De-Identified)
+                Inpatient roster
               </h2>
             </div>
             <div className="text-xs text-slate-500 mt-0.5">
-              {patients.length} active inpatients &middot; WHO Inpatient Malnutrition Protocols
+              {patients.length} active beds
             </div>
           </div>
 
@@ -119,10 +120,10 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
             <button
               type="button"
               onClick={onBatchPrint}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 active:scale-95 transition-all shadow-xs min-h-[40px]"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 active:scale-95 transition-all shadow-xs min-h-[40px]"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Batch Print Bedside Sheets</span>
+              <span>Batch print</span>
             </button>
 
             <button
@@ -135,64 +136,64 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 active:scale-95 rounded-lg shadow-xs transition-all min-h-[40px]"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Inpatient Bed</span>
+              <span>Add bed</span>
             </button>
           </div>
         </div>
 
         {/* Aggregated Formula Batch Preparation Requirements */}
         <div>
-          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+          <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Beaker className="w-3.5 h-3.5 text-blue-700" />
-              <span>24-Hour Formula Batch Preparation Requirements</span>
+              <Beaker className="w-4 h-4 text-blue-700" />
+              <span>24h batch kitchen targets</span>
             </div>
-            <span className="text-[11px] font-normal text-slate-500 font-mono">
-              Combined totals for all {patients.length} children
+            <span className="text-xs font-medium text-slate-500">
+              Total for {patients.length} children
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/60">
-              <span className="text-[11px] font-semibold text-blue-900 block">Total F-75 Stabilization</span>
-              <div className="text-2xl font-mono font-bold text-blue-950 mt-0.5">
+              <span className="text-xs font-semibold text-blue-900 block">F-75 total</span>
+              <div className="text-2xl font-bold text-slate-900 mt-0.5">
                 {wardSummary.totalF75Ml}
-                <span className="text-xs font-sans text-blue-700 ml-1">mL/day</span>
+                <span className="text-xs font-normal text-blue-700 ml-1">mL/day</span>
               </div>
-              <div className="text-[11px] text-blue-800 mt-1 font-mono">
-                {wardSummary.f75PatientsCount} patients on F-75
+              <div className="text-xs text-blue-800 mt-1 font-medium">
+                {wardSummary.f75PatientsCount} on F-75
               </div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
-              <span className="text-[11px] font-semibold text-slate-700 block">Total F-100 Catch-Up</span>
-              <div className="text-2xl font-mono font-bold text-slate-900 mt-0.5">
+              <span className="text-xs font-semibold text-slate-700 block">F-100 total</span>
+              <div className="text-2xl font-bold text-slate-900 mt-0.5">
                 {wardSummary.totalF100Ml}
-                <span className="text-xs font-sans text-slate-500 ml-1">mL/day</span>
+                <span className="text-xs font-normal text-slate-500 ml-1">mL/day</span>
               </div>
-              <div className="text-[11px] text-slate-600 mt-1 font-mono">
-                {wardSummary.f100PatientsCount} patients on F-100
+              <div className="text-xs text-slate-600 mt-1 font-medium">
+                {wardSummary.f100PatientsCount} on F-100
               </div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
-              <span className="text-[11px] font-semibold text-slate-700 block">Total Liquid CMV Solution</span>
-              <div className="text-2xl font-mono font-bold text-slate-900 mt-0.5">
+              <span className="text-xs font-semibold text-slate-700 block">Liquid CMV total</span>
+              <div className="text-2xl font-bold text-slate-900 mt-0.5">
                 {wardSummary.totalCmvSolutionMl}
-                <span className="text-xs font-sans text-slate-500 ml-1">mL</span>
+                <span className="text-xs font-normal text-slate-500 ml-1">mL</span>
               </div>
-              <div className="text-[11px] text-slate-600 mt-1 font-mono">
+              <div className="text-xs text-slate-600 mt-1 font-medium">
                 20 mL per 1,000 mL batch
               </div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
-              <span className="text-[11px] font-semibold text-slate-700 block">Ward Sugar &amp; Oil</span>
-              <div className="text-lg font-mono font-bold text-slate-900 mt-1">
+              <span className="text-xs font-semibold text-slate-700 block">Sugar &amp; oil</span>
+              <div className="text-lg font-bold text-slate-900 mt-1">
                 {wardSummary.totalSugarGrams}g <span className="text-xs font-normal text-slate-500">sugar</span> &middot; {wardSummary.totalOilGrams}g <span className="text-xs font-normal text-slate-500">oil</span>
               </div>
-              <div className="text-[11px] text-slate-500 mt-1 font-mono">
-                {wardSummary.totalCerealFlourGrams}g cereal flour
+              <div className="text-xs text-slate-500 mt-1 font-medium">
+                {wardSummary.totalCerealFlourGrams}g flour
               </div>
             </div>
           </div>
@@ -201,7 +202,7 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        <span className="text-slate-500 font-semibold mr-1">Filter Ward:</span>
+        <span className="text-slate-500 font-semibold mr-1">Filter:</span>
         {(['All', 'F-75', 'F-100', 'HighRisk'] as const).map((tab) => {
           const count =
             tab === 'All'
@@ -228,10 +229,10 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                   : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900'
               }`}
             >
-              {tab === 'All' && 'All Inpatients'}
-              {tab === 'F-75' && 'F-75 Stabilization'}
-              {tab === 'F-100' && 'F-100 Rehabilitation'}
-              {tab === 'HighRisk' && 'High Risk / Severe'} ({count})
+              {tab === 'All' && 'All'}
+              {tab === 'F-75' && 'F-75'}
+              {tab === 'F-100' && 'F-100'}
+              {tab === 'HighRisk' && 'High risk'} ({count})
             </button>
           );
         })}
@@ -258,15 +259,15 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-md bg-slate-900 text-white font-mono text-xs font-bold">
+                    <span className="px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold">
                       {patient.cotNumber}
                     </span>
                     <div>
                       <h3 className="font-bold text-slate-900 text-sm leading-tight">
                         {patient.name}
                       </h3>
-                      <div className="text-[11px] font-mono text-slate-500">
-                        MRN: {patient.mrn} &middot; {patient.input.age_months ?? '--'} mo &middot; {patient.input.sex}
+                      <div className="text-xs text-slate-500 font-medium">
+                        Ref: {patient.mrn} &middot; {patient.input.age_months ?? '--'} mo &middot; {patient.input.sex}
                       </div>
                     </div>
                   </div>
@@ -280,27 +281,27 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
 
                 {/* Error Banner if F-100 with severe edema */}
                 {isF100EdemaError && (
-                  <div className="mb-2 p-2 rounded bg-rose-50 border border-rose-300 text-rose-900 text-[11px] font-bold flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <div className="mb-2 p-2 rounded-lg bg-red-50 border border-red-200 text-red-900 text-xs font-bold flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
                     <span>Rule 2 Error: F-100 Contraindicated in Severe Edema</span>
                   </div>
                 )}
 
                 {/* Anthropometrics & Z-Score */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 mb-3 text-xs font-mono">
+                <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 mb-3 text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-500 block">WEIGHT</span>
+                    <span className="text-[10px] text-slate-500 font-semibold block">Weight</span>
                     <strong className="text-slate-900 text-sm">{patient.input.weight_kg} kg</strong>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">LENGTH</span>
+                    <span className="text-[10px] text-slate-500 font-semibold block">Length</span>
                     <strong className="text-slate-900 text-sm">{patient.input.height_cm ?? '--'} cm</strong>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">WHZ</span>
+                    <span className="text-[10px] text-slate-500 font-semibold block">WHZ</span>
                     <strong
                       className={`text-sm ${
-                        evalRes.growthAssessment?.isSam ? 'text-rose-700' : 'text-amber-700'
+                        evalRes.growthAssessment?.isSam ? 'text-red-600 font-bold' : 'text-amber-600 font-bold'
                       }`}
                     >
                       {evalRes.growthAssessment?.wflZScore !== undefined
@@ -311,9 +312,9 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                 </div>
 
                 {/* Status Badges */}
-                <div className="flex flex-wrap items-center gap-1.5 mb-3 text-[11px]">
+                <div className="flex flex-wrap items-center gap-1.5 mb-3 text-xs">
                   <span
-                    className={`px-2 py-0.5 rounded font-semibold ${
+                    className={`px-2 py-0.5 rounded-lg font-semibold ${
                       patient.input.therapeutic_phase === 'F-75 Stabilization'
                         ? 'bg-blue-50 text-blue-800 border border-blue-200'
                         : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
@@ -323,36 +324,36 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                   </span>
 
                   <span
-                    className={`px-2 py-0.5 rounded font-semibold ${
+                    className={`px-2 py-0.5 rounded-lg font-semibold ${
                       isHighEdema
-                        ? 'bg-rose-100 text-rose-900 border border-rose-300'
+                        ? 'bg-red-50 text-red-700 border border-red-200'
                         : patient.input.edema_severity === 'None'
                         ? 'bg-slate-100 text-slate-700'
-                        : 'bg-amber-100 text-amber-900'
+                        : 'bg-amber-50 text-amber-800 border border-amber-200'
                     }`}
                   >
                     Edema: {patient.input.edema_severity}
                   </span>
 
-                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">
+                  <span className="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 font-medium">
                     q{patient.input.feeding_interval_hours}h
                   </span>
                 </div>
 
                 {/* Feeding Target Strip */}
-                <div className="p-2.5 rounded-lg border border-slate-200 bg-slate-50 text-xs mb-3 flex items-center justify-between">
+                <div className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs mb-3 flex items-center justify-between">
                   <div>
-                    <span className="text-slate-500 text-[10px] uppercase font-semibold block">Feed Target</span>
-                    <strong className="font-mono text-blue-900 text-sm">
+                    <span className="text-slate-500 text-[10px] font-semibold block">Feed target</span>
+                    <strong className="text-slate-900 text-base font-bold">
                       {evalRes.feedingSummary.targetVolumePerFeed} mL
                     </strong>
-                    <span className="text-slate-500 text-[11px] ml-1">
-                      every {evalRes.feedingSummary.feedingIntervalHours}h
+                    <span className="text-slate-500 text-xs ml-1">
+                      q{evalRes.feedingSummary.feedingIntervalHours}h
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-slate-500 text-[10px] uppercase font-semibold block">24h Total</span>
-                    <strong className="font-mono text-slate-900 text-sm">
+                    <span className="text-slate-500 text-[10px] font-semibold block">24h total</span>
+                    <strong className="text-slate-900 text-sm font-bold">
                       {evalRes.feedingSummary.dailyVolume} mL
                     </strong>
                   </div>
@@ -370,14 +371,14 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
                   }`}
                 >
-                  <span>{isSelected ? 'Currently Viewing' : 'Select Child'}</span>
+                  <span>{isSelected ? 'Viewing' : 'Select'}</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onPrintPatient(patient)}
-                  className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 min-h-[36px] min-w-[36px] flex items-center justify-center"
+                  className="hidden sm:flex p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 min-h-[36px] min-w-[36px] items-center justify-center"
                   title="Print Bedside Sheet"
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -406,7 +407,7 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-2">
                 <Bed className="w-5 h-5 text-blue-700" />
-                <span className="font-bold text-slate-900 text-base">Add Inpatient Bed (De-Identified)</span>
+                <span className="font-bold text-slate-900 text-base">Add bed</span>
               </div>
               <button
                 type="button"
@@ -419,13 +420,13 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
 
             {/* De-identification notice banner */}
             <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-[11px] text-blue-900 leading-snug">
-              <strong>De-Identification Policy:</strong> Do not enter identifiable patient names or hospital records. Use bed identifiers and optional initials only.
+              Use bed identifiers and initials only. No identifiable names.
             </div>
 
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Cot / Bed Identifier</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Cot / bed</label>
                   <input
                     type="text"
                     value={newCot}
@@ -459,63 +460,64 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Age (Months)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="60"
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Age (Months)</label>
+                  <ClinicalNumberInput
                     value={newAge}
-                    onChange={(e) => setNewAge(parseInt(e.target.value) || 0)}
-                    className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono"
+                    onChange={(val) => setNewAge(val)}
+                    min={0}
+                    max={60}
+                    isInteger={true}
+                    unit="mo"
+                    className="w-full h-12 min-h-[48px] border border-slate-300 rounded-xl px-2.5 text-base font-bold text-slate-900 bg-white shadow-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Sex</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Sex</label>
                   <select
                     value={newSex}
                     onChange={(e) => setNewSex(e.target.value as 'Boy' | 'Girl')}
-                    className="w-full border border-slate-300 rounded-lg px-2 py-1.5 bg-white"
+                    className="w-full h-12 min-h-[48px] border border-slate-300 rounded-xl px-3 bg-white text-base font-semibold text-slate-900 shadow-xs"
                   >
                     <option value="Boy">Boy</option>
                     <option value="Girl">Girl</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Weight (kg)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="1.5"
-                    max="25"
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Weight (kg)</label>
+                  <ClinicalNumberInput
                     value={newWeight}
-                    onChange={(e) => setNewWeight(parseFloat(e.target.value) || 0)}
-                    className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono font-bold"
+                    onChange={(val) => setNewWeight(val)}
+                    min={1.5}
+                    max={25.0}
+                    step={0.1}
+                    unit="kg"
+                    className="w-full h-12 min-h-[48px] border border-slate-300 rounded-xl px-2.5 text-base font-bold text-slate-900 bg-white shadow-xs"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Length / Stature (cm)</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="45"
-                    max="110"
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Length / Stature (cm)</label>
+                  <ClinicalNumberInput
                     value={newHeight}
-                    onChange={(e) => setNewHeight(parseFloat(e.target.value) || 0)}
-                    className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 font-mono"
+                    onChange={(val) => setNewHeight(val)}
+                    min={45.0}
+                    max={110.0}
+                    step={0.5}
+                    unit="cm"
+                    className="w-full h-12 min-h-[48px] border border-slate-300 rounded-xl px-2.5 text-base font-bold text-slate-900 bg-white shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Feeding Interval</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Feeding Interval</label>
                   <select
                     value={newInterval}
                     onChange={(e) => setNewInterval(parseInt(e.target.value) as 2 | 3 | 4)}
-                    className="w-full border border-slate-300 rounded-lg px-2 py-1.5 bg-white font-mono"
+                    className="w-full h-12 min-h-[48px] border border-slate-300 rounded-xl px-3 bg-white text-base font-semibold text-slate-900 shadow-xs"
                   >
                     <option value={2}>2 Hours (12 feeds/d)</option>
                     <option value={3}>3 Hours (8 feeds/d)</option>
@@ -525,19 +527,19 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Bilateral Pitting Edema</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Bilateral Pitting Edema</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['None', 'Mild/Moderate (+ / ++)', 'Severe (+++)'] as const).map((sev) => (
                     <button
                       key={sev}
                       type="button"
                       onClick={() => setNewEdema(sev)}
-                      className={`p-2 rounded-lg border text-xs font-semibold text-center transition-all ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all min-h-[48px] flex items-center justify-center ${
                         newEdema === sev
                           ? sev === 'Severe (+++)'
-                            ? 'bg-rose-100 border-rose-600 text-rose-900'
-                            : 'bg-blue-50 border-blue-600 text-blue-900'
-                          : 'bg-slate-50 border-slate-300 text-slate-700'
+                            ? 'bg-red-50 border-red-300 text-red-700 font-bold'
+                            : 'bg-blue-50 border-blue-600 text-blue-900 font-bold'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                       }`}
                     >
                       {sev}
@@ -547,17 +549,17 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Therapeutic Milk Phase</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Therapeutic Milk Phase</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(['F-75 Stabilization', 'F-100 Rehabilitation'] as const).map((ph) => (
                     <button
                       key={ph}
                       type="button"
                       onClick={() => setNewPhase(ph)}
-                      className={`p-2 rounded-lg border text-xs font-semibold text-center transition-all ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all min-h-[48px] flex items-center justify-center ${
                         newPhase === ph
                           ? 'bg-blue-50 border-blue-600 text-blue-900 font-bold'
-                          : 'bg-slate-50 border-slate-300 text-slate-700'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                       }`}
                     >
                       {ph}
@@ -567,11 +569,11 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="px-3.5 py-2 rounded-lg border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-50"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 min-h-[48px]"
               >
                 Cancel
               </button>
@@ -579,7 +581,7 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                 type="button"
                 onClick={handleCreatePatient}
                 disabled={!newCot.trim()}
-                className="px-4 py-2 rounded-lg bg-blue-700 text-white font-semibold text-xs hover:bg-blue-800 disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-blue-700 text-white font-bold text-xs hover:bg-blue-800 disabled:opacity-50 min-h-[48px] shadow-xs"
               >
                 Add to Ward Roster
               </button>
