@@ -709,22 +709,26 @@ export const WHOGrowthChart: React.FC<WHOGrowthChartProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs transition-all ${
-        isExpanded ? 'fixed inset-2 z-50 overflow-y-auto bg-white shadow-2xl p-4' : ''
+      className={`bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs transition-all ${
+        isExpanded ? 'fixed inset-2 z-50 overflow-y-auto bg-white shadow-2xl p-4 rounded-3xl' : ''
       }`}
     >
       {/* 1. Header & Controls Bar */}
-      <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 space-y-4">
+      <div className="p-4 sm:p-5 bg-white border-b border-slate-200 space-y-4">
         {/* Top Line: Chart Identity & Sex Selection */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-700" />
-              <h2 className="text-base font-bold text-slate-900">{chartConfig.title}</h2>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
+                {chartConfig.title}
+              </h2>
               <span
-                className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-semibold ${
                   currentZ < -3
-                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    ? 'bg-rose-50 text-rose-700 border border-rose-200'
                     : currentZ < -2
                     ? 'bg-amber-50 text-amber-700 border border-amber-200'
                     : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
@@ -733,7 +737,7 @@ export const WHOGrowthChart: React.FC<WHOGrowthChartProps> = ({
                 WHZ: {currentZ > 0 ? `+${currentZ}` : currentZ} SD
               </span>
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">{chartConfig.subtitle}</div>
+            <div className="text-xs text-slate-500 mt-1 pl-10.5">{chartConfig.subtitle}</div>
           </div>
 
           {/* Gender & Expand Controls */}
@@ -749,7 +753,7 @@ export const WHOGrowthChart: React.FC<WHOGrowthChartProps> = ({
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Boy (WHO Blue)
+                Boy
               </button>
               <button
                 type="button"
@@ -761,7 +765,7 @@ export const WHOGrowthChart: React.FC<WHOGrowthChartProps> = ({
                     : 'opacity-85 hover:opacity-100'
                 }`}
               >
-                Girl (WHO Rose)
+                Girl
               </button>
             </div>
 
@@ -793,7 +797,7 @@ export const WHOGrowthChart: React.FC<WHOGrowthChartProps> = ({
                   : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              Weight-for-Length (45-110 cm)
+              Weight-for-length
             </button>
             <button
               type="button"
@@ -804,7 +808,7 @@ export const WHOGrowthChart: React.FC<WHOGrowthChartProps> = ({
                   : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              Weight-for-Age (0-60 mo)
+              Weight-for-age
             </button>
             <button
               type="button"
@@ -815,7 +819,7 @@ export const WHOGrowthChart: React.FC<WHOGrowthChartProps> = ({
                   : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              Length-for-Age (0-60 mo)
+              Length-for-age
             </button>
           </div>
 

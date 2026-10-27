@@ -102,25 +102,28 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner & Batch Formula Preparation Summary */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-5">
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-700" />
-              <h2 className="text-base font-bold text-slate-900 tracking-tight">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700">
+                <Users className="w-4 h-4" />
+              </div>
+              <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
                 Inpatient roster
               </h2>
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              {patients.length} active beds
+            <div className="text-xs text-slate-500 mt-1 pl-10.5">
+              {patients.length} active beds &middot; WHO 2023 stabilization protocol
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
               type="button"
+              disabled={patients.length === 0}
               onClick={onBatchPrint}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 active:scale-95 transition-all shadow-xs min-h-[40px]"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 border border-slate-300 rounded-xl hover:bg-slate-50 active:scale-95 transition-all shadow-xs min-h-[40px] disabled:opacity-40 disabled:pointer-events-none"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Batch print</span>
@@ -133,7 +136,7 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                 setNewMrn(`Ref-${100 + patients.length + 1}`);
                 setShowAddModal(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 active:scale-95 rounded-lg shadow-xs transition-all min-h-[40px]"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 active:scale-95 rounded-xl shadow-xs transition-all min-h-[40px]"
             >
               <Plus className="w-4 h-4" />
               <span>Add bed</span>
@@ -143,10 +146,14 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
 
         {/* Aggregated Formula Batch Preparation Requirements */}
         <div>
-          <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Beaker className="w-4 h-4 text-blue-700" />
-              <span>24h batch kitchen targets</span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                <Beaker className="w-3.5 h-3.5" />
+              </div>
+              <h3 className="font-serif text-base text-slate-900 font-normal">
+                24h batch kitchen targets
+              </h3>
             </div>
             <span className="text-xs font-medium text-slate-500">
               Total for {patients.length} children
@@ -201,41 +208,42 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        <span className="text-slate-500 font-semibold mr-1">Filter:</span>
-        {(['All', 'F-75', 'F-100', 'HighRisk'] as const).map((tab) => {
-          const count =
-            tab === 'All'
-              ? patients.length
-              : tab === 'F-75'
-              ? wardSummary.f75PatientsCount
-              : tab === 'F-100'
-              ? wardSummary.f100PatientsCount
-              : patients.filter(
-                  (p) =>
-                    p.input.edema_severity === 'Severe (+++)' ||
-                    p.input.weight_kg < 4.5 ||
-                    (p.input.therapeutic_phase === 'F-100 Rehabilitation' &&
-                      p.input.edema_severity !== 'None')
-                ).length;
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <div className="inline-flex items-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 shrink-0">
+          {(['All', 'F-75', 'F-100', 'HighRisk'] as const).map((tab) => {
+            const count =
+              tab === 'All'
+                ? patients.length
+                : tab === 'F-75'
+                ? wardSummary.f75PatientsCount
+                : tab === 'F-100'
+                ? wardSummary.f100PatientsCount
+                : patients.filter(
+                    (p) =>
+                      p.input.edema_severity === 'Severe (+++)' ||
+                      p.input.weight_kg < 4.5 ||
+                      (p.input.therapeutic_phase === 'F-100 Rehabilitation' &&
+                        p.input.edema_severity !== 'None')
+                  ).length;
 
-          return (
-            <button
-              key={tab}
-              onClick={() => setFilterPhase(tab)}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 ${
-                filterPhase === tab
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {tab === 'All' && 'All'}
-              {tab === 'F-75' && 'F-75'}
-              {tab === 'F-100' && 'F-100'}
-              {tab === 'HighRisk' && 'High risk'} ({count})
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={tab}
+                onClick={() => setFilterPhase(tab)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  filterPhase === tab
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab === 'All' && 'All'}
+                {tab === 'F-75' && 'F-75'}
+                {tab === 'F-100' && 'F-100'}
+                {tab === 'HighRisk' && 'High risk'} ({count})
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Patients Roster List */}
@@ -249,7 +257,7 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
           return (
             <div
               key={patient.id}
-              className={`bg-white rounded-xl border p-4 transition-all relative flex flex-col justify-between ${
+              className={`bg-white rounded-2xl border p-4 sm:p-5 transition-all relative flex flex-col justify-between ${
                 isSelected
                   ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md'
                   : 'border-slate-200 hover:border-slate-300 shadow-xs'
@@ -384,21 +392,53 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
                   <Printer className="w-3.5 h-3.5" />
                 </button>
 
-                {patients.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => onDeletePatient(patient.id)}
-                    className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 min-h-[36px] min-w-[36px] flex items-center justify-center"
-                    title="Discharge / Remove"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => onDeletePatient(patient.id)}
+                  className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 min-h-[36px] min-w-[36px] flex items-center justify-center"
+                  title="Discharge / Remove"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Empty State when no patients in ward */}
+      {patients.length === 0 && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 text-center max-w-md mx-auto space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center mx-auto">
+            <Bed className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-slate-900">Ward roster is empty</h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              No inpatients are currently admitted. Add a bed to start monitoring feeds and nutritional recovery.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setNewCot('Cot 01');
+              setNewMrn('Ref-101');
+              setShowAddModal(true);
+            }}
+            className="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-xl text-xs inline-flex items-center gap-1.5 shadow-xs transition-colors min-h-[42px]"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add first bed</span>
+          </button>
+        </div>
+      )}
+
+      {/* Filtered empty state when patients exist but filter hides them */}
+      {patients.length > 0 && filteredPatients.length === 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-xs text-slate-500">
+          No patients match the selected filter ({filterPhase}).
+        </div>
+      )}
 
       {/* Admit Child Modal (De-Identified) */}
       {showAddModal && (

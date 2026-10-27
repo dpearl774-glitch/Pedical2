@@ -182,9 +182,9 @@ export const WHO_BOYS_LFA: WHOAgePoint[] = [
   { x: 12, ageMonths: 12, sd3neg: 68.6, sd2neg: 71.0, sd1neg: 73.4, median: 75.7, sd1: 78.1, sd2: 80.5, sd3: 82.9 },
   { x: 18, ageMonths: 18, sd3neg: 74.2, sd2neg: 76.9, sd1neg: 79.6, median: 82.3, sd1: 85.0, sd2: 87.7, sd3: 90.4 },
   { x: 24, ageMonths: 24, sd3neg: 78.0, sd2neg: 81.0, sd1neg: 84.1, median: 87.1, sd1: 90.2, sd2: 93.2, sd3: 96.3 },
-  { x: 36, ageMonths: 36, sd3neg: 88.7, sd2neg: 92.4, sd1neg: 96.1, median: 96.1, sd1: 99.8, sd2: 103.5, sd3: 107.2 },
-  { x: 48, ageMonths: 48, sd3neg: 94.9, sd2neg: 99.1, sd1neg: 103.3, median: 103.3, sd1: 107.5, sd2: 111.7, sd3: 115.9 },
-  { x: 60, ageMonths: 60, sd3neg: 100.7, sd2neg: 105.3, sd1neg: 110.0, median: 110.0, sd1: 114.6, sd2: 119.2, sd3: 123.9 },
+  { x: 36, ageMonths: 36, sd3neg: 85.0, sd2neg: 88.7, sd1neg: 92.4, median: 96.1, sd1: 99.8, sd2: 103.5, sd3: 107.2 },
+  { x: 48, ageMonths: 48, sd3neg: 90.7, sd2neg: 94.9, sd1neg: 99.1, median: 103.3, sd1: 107.5, sd2: 111.7, sd3: 115.9 },
+  { x: 60, ageMonths: 60, sd3neg: 96.1, sd2neg: 100.7, sd1neg: 105.3, median: 110.0, sd1: 114.6, sd2: 119.2, sd3: 123.9 },
 ];
 
 export const WHO_GIRLS_LFA: WHOAgePoint[] = [
@@ -197,9 +197,9 @@ export const WHO_GIRLS_LFA: WHOAgePoint[] = [
   { x: 12, ageMonths: 12, sd3neg: 66.3, sd2neg: 68.9, sd1neg: 71.4, median: 74.0, sd1: 76.6, sd2: 79.2, sd3: 81.7 },
   { x: 18, ageMonths: 18, sd3neg: 72.8, sd2neg: 74.9, sd1neg: 77.8, median: 80.7, sd1: 83.6, sd2: 86.5, sd3: 89.4 },
   { x: 24, ageMonths: 24, sd3neg: 76.0, sd2neg: 80.0, sd1neg: 82.5, median: 85.7, sd1: 88.9, sd2: 92.2, sd3: 95.4 },
-  { x: 36, ageMonths: 36, sd3neg: 87.4, sd2neg: 91.2, sd1neg: 95.1, median: 95.1, sd1: 98.9, sd2: 102.7, sd3: 106.5 },
-  { x: 48, ageMonths: 48, sd3neg: 94.1, sd2neg: 98.4, sd1neg: 102.7, median: 102.7, sd1: 107.0, sd2: 111.3, sd3: 115.7 },
-  { x: 60, ageMonths: 60, sd3neg: 99.9, sd2neg: 104.7, sd1neg: 109.4, median: 109.4, sd1: 114.2, sd2: 119.0, sd3: 123.7 },
+  { x: 36, ageMonths: 36, sd3neg: 83.6, sd2neg: 87.4, sd1neg: 91.2, median: 95.1, sd1: 98.9, sd2: 102.7, sd3: 106.5 },
+  { x: 48, ageMonths: 48, sd3neg: 89.8, sd2neg: 94.1, sd1neg: 98.4, median: 102.7, sd1: 107.0, sd2: 111.3, sd3: 115.7 },
+  { x: 60, ageMonths: 60, sd3neg: 95.2, sd2neg: 99.9, sd1neg: 104.7, median: 109.4, sd1: 114.2, sd2: 119.0, sd3: 123.7 },
 ];
 
 /**

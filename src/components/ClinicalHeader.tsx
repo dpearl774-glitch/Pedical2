@@ -64,14 +64,14 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           <button
             type="button"
-            onClick={() => onTabChange('ward')}
-            className="flex items-center gap-1.5 group text-left min-h-[36px] py-1 px-1 rounded-lg hover:bg-slate-800/80 transition-colors"
-            title="Ward roster"
+            onClick={() => onTabChange('today')}
+            className="flex items-center gap-2 group text-left min-h-[36px] py-1 px-1 rounded-xl hover:bg-slate-800/80 transition-colors"
+            title="Today dashboard"
           >
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-blue-500 transition-colors">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-xs group-hover:bg-blue-500 transition-colors">
               p
             </div>
-            <span className="text-sm sm:text-base font-bold tracking-tight text-white lowercase">
+            <span className="font-serif text-base sm:text-lg font-normal tracking-tight text-white lowercase">
               pedical
             </span>
           </button>
@@ -83,7 +83,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="w-full flex items-center justify-between gap-1 px-2 sm:px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all min-h-[34px] sm:min-h-[38px]"
+              className="w-full flex items-center justify-between gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all min-h-[34px] sm:min-h-[38px] shadow-xs"
               title="Switch bed"
               aria-label="Active patient selector"
             >
@@ -108,7 +108,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             </button>
 
             {dropdownOpen && (
-              <div className="absolute left-1/2 -translate-x-1/2 mt-1 w-64 sm:w-72 rounded-xl bg-slate-900 border border-slate-700 shadow-xl py-1 z-50 text-xs">
+              <div className="absolute left-1/2 -translate-x-1/2 mt-1 w-64 sm:w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-xl py-1.5 z-50 text-xs">
                 <div className="px-3 py-2 border-b border-slate-800 text-[11px] font-semibold text-slate-400 flex justify-between items-center">
                   <span>Inpatients ({patients.length})</span>
                   <button
@@ -117,7 +117,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
                       setDropdownOpen(false);
                       onTabChange('ward');
                     }}
-                    className="text-blue-400 hover:text-blue-300 font-medium text-xs"
+                    className="text-blue-400 hover:text-blue-300 font-medium text-xs underline"
                   >
                     View roster
                   </button>
@@ -135,12 +135,12 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
                           setDropdownOpen(false);
                         }}
                         className={`w-full px-3 py-2 text-left flex items-center justify-between hover:bg-slate-800 transition-colors min-h-[40px] ${
-                          isSelected ? 'bg-blue-950/60 text-blue-200 font-medium' : 'text-slate-300'
+                          isSelected ? 'bg-blue-950/70 text-blue-200 font-semibold' : 'text-slate-300'
                         }`}
                       >
                         <div className="truncate pr-2">
                           <div className="flex items-center gap-1.5 text-xs text-white">
-                            <span className="text-slate-400">{p.cotNumber}:</span>
+                            <span className="text-slate-400 font-medium">{p.cotNumber}:</span>
                             <span className="truncate">{p.name}</span>
                           </div>
                           <div className="text-[10px] text-slate-400">
@@ -160,7 +160,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
                       setDropdownOpen(false);
                       onAdmitNewChild();
                     }}
-                    className="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors text-xs min-h-[36px]"
+                    className="w-full py-1.5 px-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl flex items-center justify-center gap-1.5 transition-colors text-xs min-h-[36px]"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
                     <span>Add bed</span>
@@ -178,7 +178,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onLockScreen}
-              className="w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 hover:text-white transition-colors shrink-0"
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-xl border border-amber-500/40 bg-amber-950/40 text-amber-300 hover:text-white transition-colors shrink-0"
               title="Lock screen"
               aria-label="Lock screen"
             >
@@ -191,7 +191,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenReminders}
-              className="relative w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:text-white transition-colors shrink-0"
+              className="relative w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:text-white transition-colors shrink-0 shadow-xs"
               title="Reminders"
               aria-label="Reminders"
             >
@@ -211,7 +211,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenReference}
-            className="hidden md:flex px-2 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white items-center gap-1 text-xs transition-colors min-h-[34px]"
+            className="hidden md:flex px-2.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:text-white items-center gap-1.5 text-xs transition-colors min-h-[34px] shadow-xs"
             title="Protocols"
           >
             <BookOpen className="w-3.5 h-3.5 text-blue-400" />
@@ -222,7 +222,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenDisclaimer}
-              className="hidden lg:flex px-2 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white items-center gap-1 text-xs transition-colors min-h-[34px]"
+              className="hidden lg:flex px-2.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:text-white items-center gap-1.5 text-xs transition-colors min-h-[34px] shadow-xs"
               title="Notice"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -233,7 +233,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
           <button
             type="button"
             onClick={onPrint}
-            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors whitespace-nowrap shrink-0 min-h-[34px]"
+            className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition-colors whitespace-nowrap shrink-0 min-h-[34px] shadow-xs"
             title="Print worksheet"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -245,7 +245,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenSettings}
-              className="w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-200 hover:text-white transition-colors shrink-0"
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:text-white transition-colors shrink-0 shadow-xs"
               title="Settings"
               aria-label="Settings"
             >

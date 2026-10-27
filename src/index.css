@@ -12,6 +12,8 @@
     touch-action: pan-y;
     overscroll-behavior-x: none;
     -webkit-overflow-scrolling: touch;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   #root {
@@ -20,7 +22,20 @@
     max-width: 100%;
     position: relative;
     min-height: 100vh;
+    background-color: #f8fafc;
   }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+  }
+}
+
+.font-serif {
+  font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+}
+
+.font-sans {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 @media print {

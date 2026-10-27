@@ -108,35 +108,76 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
     const triggers: string[] = [];
     const isEdematous = edema !== 'None';
     const isSevereEdema = edema === 'Grade +++ (Severe)';
-    const isSamMuac = muacMm < 115;
-    const isSamZScore = weightKg < thresholds.sd3neg;
-
-    const isMamMuac = muacMm >= 115 && muacMm < 125;
-    const isMamZScore = !isSamZScore && weightKg < thresholds.sd2neg;
+    const isInfantUnder6m = ageMonths < 6;
 
     let classification: 'SAM' | 'MAM' | 'Normal' = 'Normal';
     let action = 'Adequate nutrition status. Continue routine growth monitoring and preventive counseling.';
 
-    if (isEdematous || isSamMuac || isSamZScore) {
-      classification = 'SAM';
-      if (isEdematous) triggers.push(`Bilateral pitting edema (${edema})`);
-      if (isSamMuac) triggers.push(`MUAC ${muacMm} mm (< 115 mm)`);
-      if (isSamZScore) triggers.push(`WHZ < -3 SD (${wflZScore} SD, ref ${thresholds.sd3neg} kg)`);
+    if (isInfantUnder6m) {
+      // -----------------------------------------------------------------------
+      // INFANTS UNDER 6 MONTHS (< 6 months / 0–5 months)
+      // Authoritative Source: WHO 2023 Guideline on Wasting & Nutritional Oedema
+      // & WHO 2013 Updates on Management of SAM in Infants and Children.
+      // - Standard MUAC cutoffs (<115 mm / 115–124 mm) are NOT diagnostic for <6m.
+      // - Older-child appetite test and OTP with RUTF are strictly CONTRAINDICATED.
+      // -----------------------------------------------------------------------
+      const isSamZScore = weightKg < thresholds.sd3neg;
+      const isMamZScore = !isSamZScore && weightKg < thresholds.sd2neg;
 
-      if (isSevereEdema) {
-        action = 'Emergency: Refer to inpatient F-75 due to generalized severe edema.';
+      if (isEdematous || isSamZScore) {
+        classification = 'SAM';
+        if (isEdematous) triggers.push(`Bilateral pitting edema (${edema}) in infant < 6m`);
+        if (isSamZScore) triggers.push(`WHZ < -3 SD (${wflZScore} SD, ref ${thresholds.sd3neg} kg) in infant < 6m`);
+
+        if (isSevereEdema) {
+          action = 'Urgent Inpatient Admission: Severe edema in infant < 6m carries high mortality risk. Admit for stabilization with F-75 / specialized support. RUTF is contraindicated.';
+        } else if (isEdematous) {
+          action = 'Inpatient Referral: Bilateral edema in infant < 6m warrants inpatient stabilization, investigation of underlying causes, and skilled lactation support. RUTF is contraindicated.';
+        } else {
+          action = 'Severe wasting in infant < 6m: Detailed clinical & breastfeeding assessment. Admit to inpatient if complicated, failing to feed, or severe growth faltering (use Supplementary Suckling Technique / diluted F-100 / formula). If clinically stable, alert, and suckling effectively without danger signs, provide skilled outpatient lactation support. (RUTF contraindicated).';
+        }
+      } else if (isMamZScore) {
+        classification = 'MAM';
+        triggers.push(`WHZ between -3 and -2 SD (${wflZScore} SD) in infant < 6m`);
+        action = 'Moderate acute malnutrition in infant < 6m: Outpatient IYCF and skilled breastfeeding assessment. Verify attachment, maternal nutrition, and hydration; monitor weight weekly. (RUTF/RUSF contraindicated; inpatient admission not indicated unless danger signs develop).';
       } else {
-        action = 'Appetite test: If passed and stable, admit to OTP (RUTF). If failed, refer to inpatient F-75.';
+        triggers.push(`WHZ ≥ -2 SD (${wflZScore} SD) in infant < 6m`);
+        triggers.push('No bilateral pitting edema');
+        action = 'Adequate nutrition status for infant < 6m. Support exclusive breastfeeding on demand and routine monthly growth monitoring.';
       }
-    } else if (isMamMuac || isMamZScore) {
-      classification = 'MAM';
-      if (isMamMuac) triggers.push(`MUAC ${muacMm} mm (115–124 mm)`);
-      if (isMamZScore) triggers.push(`WHZ between -3 and -2 SD (${wflZScore} SD)`);
-      action = 'Admit to supplementary feeding (RUSF) and IYCF counseling.';
+
+      // Explicitly document MUAC status for infants < 6m without incorrectly triggering SAM/MAM
+      triggers.push(`MUAC ${muacMm} mm (Note: <115 mm cutoff not validated for diagnosis in infants < 6m; guided by WFL & clinical signs)`);
     } else {
-      triggers.push(`MUAC ${muacMm} mm (≥ 125 mm)`);
-      triggers.push(`WHZ ≥ -2 SD (${wflZScore} SD)`);
-      triggers.push('No bilateral pitting edema');
+      // -----------------------------------------------------------------------
+      // CHILDREN AGED 6 TO 59 MONTHS (Standard WHO / Ghana Health Service Protocol)
+      // -----------------------------------------------------------------------
+      const isSamMuac = muacMm < 115;
+      const isSamZScore = weightKg < thresholds.sd3neg;
+      const isMamMuac = muacMm >= 115 && muacMm < 125;
+      const isMamZScore = !isSamZScore && weightKg < thresholds.sd2neg;
+
+      if (isEdematous || isSamMuac || isSamZScore) {
+        classification = 'SAM';
+        if (isEdematous) triggers.push(`Bilateral pitting edema (${edema})`);
+        if (isSamMuac) triggers.push(`MUAC ${muacMm} mm (< 115 mm)`);
+        if (isSamZScore) triggers.push(`WHZ < -3 SD (${wflZScore} SD, ref ${thresholds.sd3neg} kg)`);
+
+        if (isSevereEdema) {
+          action = 'Emergency: Refer to inpatient F-75 due to generalized severe edema.';
+        } else {
+          action = 'Appetite test: If passed and stable, admit to OTP (RUTF). If failed, refer to inpatient F-75.';
+        }
+      } else if (isMamMuac || isMamZScore) {
+        classification = 'MAM';
+        if (isMamMuac) triggers.push(`MUAC ${muacMm} mm (115–124 mm)`);
+        if (isMamZScore) triggers.push(`WHZ between -3 and -2 SD (${wflZScore} SD)`);
+        action = 'Admit to supplementary feeding (RUSF) and IYCF counseling.';
+      } else {
+        triggers.push(`MUAC ${muacMm} mm (≥ 125 mm)`);
+        triggers.push(`WHZ ≥ -2 SD (${wflZScore} SD)`);
+        triggers.push('No bilateral pitting edema');
+      }
     }
 
     return {
@@ -148,7 +189,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
       triggers,
       action,
     };
-  }, [sex, heightCm, weightKg, muacMm, edema]);
+  }, [sex, heightCm, weightKg, muacMm, edema, ageMonths]);
 
   // Handle Log & Next Child
   const handleLogAndNext = () => {
@@ -223,23 +264,23 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
       <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-blue-100 text-blue-800">
-                <Activity className="w-5 h-5" />
-              </span>
-              <h2 className="text-base font-bold text-slate-900 tracking-tight">
-                Screening
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700">
+                <Activity className="w-4 h-4" />
+              </div>
+              <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
+                Rapid screening &amp; triage
               </h2>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Rapid field triage with instant WHO classification, MUAC, and WHZ routing.
+            <p className="text-xs text-slate-500 mt-1 pl-10.5">
+              Field assessment with instant WHO classification, MUAC cutoffs, and acute wasting routing.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 border border-blue-200 text-blue-900 font-mono text-[11px] font-bold">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 text-blue-700" />
-              <span>No registration needed</span>
+              <span>Zero-registration mode</span>
             </span>
           </div>
         </div>
@@ -329,7 +370,8 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                   </button>
                 )}
 
-                {(evaluation.classification === 'SAM' || evaluation.classification === 'MAM') && onSendToOutpatient && (
+                {/* Outpatient OTP/RUTF is only clinically appropriate for older children (>= 6 months) */}
+                {ageMonths >= 6 && (evaluation.classification === 'SAM' || evaluation.classification === 'MAM') && onSendToOutpatient && (
                   <button
                     type="button"
                     onClick={() =>
@@ -559,7 +601,11 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2">
                 <div>
                   <span className="font-bold text-sm text-slate-900 block">MUAC (Mid-Upper Arm Circumference)</span>
-                  <span className="text-slate-500 text-xs">Standard WHO tape calibrated for ages 6 to 59 months</span>
+                  <span className="text-slate-500 text-xs">
+                    {ageMonths < 6
+                      ? 'Calibrated for ages 6–59 months; not diagnostic for SAM/MAM under 6 months'
+                      : 'Standard WHO tape calibrated for ages 6 to 59 months'}
+                  </span>
                 </div>
                 {/* 48px Stepper controls */}
                 <div className="flex items-center gap-2">
@@ -664,17 +710,25 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                   <span>85 mm</span>
                   <span
                     className={`font-bold px-2.5 py-1 rounded-lg text-xs ${
-                      muacMm < 115
+                      ageMonths < 6
+                        ? 'bg-slate-100 text-slate-700 border border-slate-200'
+                        : muacMm < 115
                         ? 'bg-red-50 text-red-600 border border-red-200'
                         : muacMm < 125
                         ? 'bg-amber-50 text-amber-700 border border-amber-200'
                         : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     }`}
                   >
-                    Current: {muacMm} mm ({muacMm < 115 ? 'Red / SAM' : muacMm < 125 ? 'Yellow / MAM' : 'Green / Normal'})
+                    Current: {muacMm} mm {ageMonths < 6 ? '(Cutoffs apply to 6–59m)' : `(${muacMm < 115 ? 'Red / SAM' : muacMm < 125 ? 'Yellow / MAM' : 'Green / Normal'})`}
                   </span>
                   <span>160 mm</span>
                 </div>
+
+                {ageMonths < 6 && (
+                  <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-snug">
+                    <strong>Infant &lt; 6 months (WHO 2023):</strong> Standard older-child MUAC cutoffs (&lt;115 mm / 115–124 mm) are not validated for acute malnutrition diagnosis under 6 months. Triage relies on Weight-for-Length and bilateral oedema. RUTF and appetite tests are contraindicated.
+                  </div>
+                )}
               </div>
             </div>
 
@@ -786,7 +840,15 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
             </div>
 
             <div className="p-3 bg-blue-50/60 rounded-lg border border-blue-200 text-[11px] text-slate-700 leading-relaxed">
-              <strong>Rule:</strong> Any child with MUAC &lt; 115 mm, WHZ &lt; -3 SD, or pitting edema is classified as <strong>SAM</strong>.
+              {ageMonths < 6 ? (
+                <span>
+                  <strong>Infants &lt; 6 months (WHO 2023):</strong> Classified by WHZ &lt; -3 SD or bilateral pitting edema. Standard older-child MUAC cutoffs and RUTF/appetite tests are contraindicated.
+                </span>
+              ) : (
+                <span>
+                  <strong>Rule (Ages 6–59m):</strong> Any child with MUAC &lt; 115 mm, WHZ &lt; -3 SD, or pitting edema is classified as <strong>SAM</strong>.
+                </span>
+              )}
             </div>
           </div>
 

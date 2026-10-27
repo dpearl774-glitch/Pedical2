@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   CalculationInput,
   evaluatePatient,
   TherapeuticPhase,
 } from './utils/clinicalCalculations';
-import { INITIAL_WARD_PATIENTS, WardPatient } from './data/wardPatients';
+import { INITIAL_WARD_PATIENTS, WardPatient, FeedRecord } from './data/wardPatients';
 import { ClinicalHeader } from './components/ClinicalHeader';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { ParameterControls } from './components/ParameterControls';
@@ -29,19 +29,48 @@ import { ReminderNotificationBanner } from './components/ReminderNotificationBan
 import { RemindersModal } from './components/RemindersModal';
 import { useReminders } from './hooks/useReminders';
 import { AppSettings, loadAppSettings, saveAppSettings } from './utils/appSettings';
-import { Printer, ChevronRight, User, ShieldCheck, Lock, HeartHandshake, Activity, Droplets } from 'lucide-react';
+import { TodayDashboard } from './components/TodayDashboard';
+import {
+  savePatientsToIDB,
+  saveFeedingLogToIDB,
+  migrateLocalStorageToIndexedDB,
+} from './utils/indexedDBStorage';
+import { Printer, ChevronRight, User, ShieldCheck, Lock, HeartHandshake, Activity, Droplets, Bed, Plus } from 'lucide-react';
 
 const STORAGE_KEY = 'pedical_ward_inpatients_v3';
 const DISCLAIMER_STORAGE_KEY = 'pedical_disclaimer_accepted_v1';
+const PIN_LOCK_STORAGE_KEY = 'pedical_is_locked_v1';
 
 export default function App() {
   // App Settings & Customization
   const [settings, setSettings] = useState<AppSettings>(() => loadAppSettings());
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
 
-  // Bedside Security PIN Lock State
-  const [isLocked, setIsLocked] = useState<boolean>(false);
+  // Bedside Security PIN Lock State (Persistent across reload while locked)
+  const [isLocked, setIsLocked] = useState<boolean>(() => {
+    try {
+      const currentSettings = loadAppSettings();
+      if (!currentSettings.pinLockEnabled) return false;
+      return localStorage.getItem(PIN_LOCK_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const lastActivityRef = React.useRef<number>(Date.now());
+
+  // Atomic lock state updater: updates in-memory state and persists key
+  const setLockState = useCallback((locked: boolean) => {
+    setIsLocked(locked);
+    try {
+      if (locked) {
+        localStorage.setItem(PIN_LOCK_STORAGE_KEY, 'true');
+      } else {
+        localStorage.removeItem(PIN_LOCK_STORAGE_KEY);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Pediatric Reminder Engine Hook
   const {
@@ -57,13 +86,20 @@ export default function App() {
   } = useReminders();
   const [showRemindersModal, setShowRemindersModal] = useState<boolean>(false);
 
-  // Call navigator.storage.persist() on mount for browser storage persistence protection
+  // Call navigator.storage.persist() and initialize IndexedDB engine on mount
   useEffect(() => {
     if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
       navigator.storage.persist().catch(() => {
         // ignore
       });
     }
+
+    // Auto-migrate any existing LocalStorage records into IndexedDB
+    migrateLocalStorageToIndexedDB()
+      .then(() => savePatientsToIDB(patients))
+      .catch((err) => {
+        console.warn('IndexedDB initial sync notice:', err);
+      });
   }, []);
 
   // Inactivity & Visibility Auto-Lock Engine
@@ -77,7 +113,7 @@ export default function App() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (settings.autoLockMinutes === 0) {
-          setIsLocked(true);
+          setLockState(true);
         }
       } else {
         lastActivityRef.current = Date.now();
@@ -94,7 +130,7 @@ export default function App() {
       if (settings.autoLockMinutes > 0) {
         const elapsedMinutes = (Date.now() - lastActivityRef.current) / 60000;
         if (elapsedMinutes >= settings.autoLockMinutes) {
-          setIsLocked(true);
+          setLockState(true);
         }
       }
     }, 10000);
@@ -107,12 +143,13 @@ export default function App() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(interval);
     };
-  }, [settings.pinLockEnabled, settings.autoLockMinutes]);
+  }, [settings.pinLockEnabled, settings.autoLockMinutes, setLockState]);
 
   // Emergency Security Wipe Handler: Permanently purges all localStorage
   const handleEmergencyWipe = () => {
     try {
       localStorage.clear();
+      sessionStorage.clear();
     } catch {
       // ignore
     }
@@ -129,13 +166,13 @@ export default function App() {
   });
   const [isVoluntaryDisclaimerReview, setIsVoluntaryDisclaimerReview] = useState<boolean>(false);
 
-  // Ward Patients Roster State
+  // Ward Patients Roster State (Safely supports 0 patients)
   const [patients, setPatients] = useState<WardPatient[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
@@ -146,28 +183,59 @@ export default function App() {
   });
 
   const [activePatientId, setActivePatientId] = useState<string>(() => {
-    return INITIAL_WARD_PATIENTS[0]?.id || 'cot-1';
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved !== null) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed[0].id;
+        }
+        if (Array.isArray(parsed) && parsed.length === 0) {
+          return '';
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return INITIAL_WARD_PATIENTS[0]?.id || '';
   });
 
-  const [activeTab, setActiveTab] = useState<string>('ward');
+  const [activeTab, setActiveTab] = useState<string>('today');
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [printBatchMode, setPrintBatchMode] = useState<boolean>(false);
 
-  // Active patient object
+  // Active patient object safely derived without crashing on empty roster
   const activePatient = useMemo(() => {
+    if (!patients || patients.length === 0) return undefined;
     return patients.find((p) => p.id === activePatientId) || patients[0];
   }, [patients, activePatientId]);
 
-  // Current calculation input is synced with active patient
-  const input = activePatient.input;
+  // Synchronize activePatientId if stale or missing
+  useEffect(() => {
+    if (patients.length === 0) {
+      if (activePatientId !== '') {
+        setActivePatientId('');
+      }
+    } else {
+      const exists = patients.some((p) => p.id === activePatientId);
+      if (!exists) {
+        setActivePatientId(patients[0].id);
+      }
+    }
+  }, [patients, activePatientId]);
 
-  // Save patients whenever they change
+  // Current calculation input is synced with active patient (undefined when ward has zero patients)
+  const input = activePatient?.input;
+
+  // Save patients whenever they change (synchronous LocalStorage + asynchronous IndexedDB engine)
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
     } catch {
       // Ignore quota errors
     }
+    // Asynchronously persist to IndexedDB
+    savePatientsToIDB(patients).catch(() => {});
   }, [patients]);
 
   const handleAcceptDisclaimer = () => {
@@ -188,15 +256,20 @@ export default function App() {
   const handleSaveSettings = (updated: AppSettings) => {
     setSettings(updated);
     saveAppSettings(updated);
+    if (!updated.pinLockEnabled) {
+      setLockState(false);
+    }
   };
 
-  // Instant deterministic calculation for active patient
+  // Instant deterministic calculation for active patient (undefined when ward has zero patients)
   const evaluation = useMemo(() => {
+    if (!input) return undefined;
     return evaluatePatient(input);
   }, [input]);
 
   // Update input for active patient
   const handleUpdateInput = (newInput: CalculationInput) => {
+    if (!activePatientId) return;
     setPatients((prev) =>
       prev.map((p) => {
         if (p.id === activePatientId) {
@@ -214,16 +287,17 @@ export default function App() {
   };
 
   const handleResetActivePatient = () => {
+    if (!activePatient) return;
     const defaultForPatient: CalculationInput = {
       patient_id: activePatient.id,
       cot_number: activePatient.cotNumber,
       patient_name: activePatient.name,
       mrn: activePatient.mrn,
-      age_months: activePatient.input.age_months || 12,
+      age_months: activePatient.input?.age_months || 12,
       calculation_mode: 'Full WHO Assessment + Calculator',
       weight_kg: 5.0,
       height_cm: 65.0,
-      sex: activePatient.input.sex || 'Boy',
+      sex: activePatient.input?.sex || 'Boy',
       therapeutic_phase: 'F-75 Stabilization',
       edema_severity: 'None',
       feeding_interval_hours: 3,
@@ -233,6 +307,7 @@ export default function App() {
   };
 
   const handleSwitchTherapeuticPhase = (phase: TherapeuticPhase) => {
+    if (!input) return;
     handleUpdateInput({
       ...input,
       therapeutic_phase: phase,
@@ -240,6 +315,7 @@ export default function App() {
   };
 
   const handleChartSelectPoint = (lengthCm: number, weightKg: number) => {
+    if (!input) return;
     handleUpdateInput({
       ...input,
       weight_kg: weightKg,
@@ -248,6 +324,7 @@ export default function App() {
   };
 
   const handleChartUpdateSex = (sex: 'Boy' | 'Girl') => {
+    if (!input) return;
     handleUpdateInput({
       ...input,
       sex,
@@ -261,11 +338,13 @@ export default function App() {
     setActiveTab('calculator');
   };
 
-  // Delete patient from ward
+  // Delete patient from ward safely
   const handleDeletePatient = (patientId: string) => {
     setPatients((prev) => {
       const filtered = prev.filter((p) => p.id !== patientId);
-      if (patientId === activePatientId && filtered.length > 0) {
+      if (filtered.length === 0) {
+        setActivePatientId('');
+      } else if (patientId === activePatientId) {
         setActivePatientId(filtered[0].id);
       }
       return filtered;
@@ -281,14 +360,43 @@ export default function App() {
 
   // Batch print all ward patients
   const handleBatchPrint = () => {
+    if (patients.length === 0) return;
     setPrintBatchMode(true);
     setShowPrintModal(true);
   };
+
+  // Synchronize and persist feeding records for individual active patient
+  const handleUpdatePatientFeedingRecords = useCallback(
+    (
+      patientId: string,
+      records: FeedRecord[],
+      shiftStartTime?: string,
+      dietitianBatchPrepTime?: string
+    ) => {
+      setPatients((prev) =>
+        prev.map((p) => {
+          if (p.id === patientId) {
+            return {
+              ...p,
+              feedingRecords: records,
+              shiftStartTime: shiftStartTime ?? p.shiftStartTime,
+              dietitianBatchPrepTime: dietitianBatchPrepTime ?? p.dietitianBatchPrepTime,
+            };
+          }
+          return p;
+        })
+      );
+      // Persist feeding log to IndexedDB
+      saveFeedingLogToIDB(patientId, records).catch(() => {});
+    },
+    []
+  );
 
   // Bridge from Quick Screener to Inpatient Admission
   const handleAdmitFromScreener = (childData: Partial<CalculationInput>) => {
     const nextCotNum = `Cot ${String(patients.length + 1).padStart(2, '0')}`;
     const nextMrn = `Ref-${100 + patients.length + 1}`;
+    const baseInput: Partial<CalculationInput> = activePatient ? activePatient.input : {};
     const newPatient: WardPatient = {
       id: `cot-${Date.now()}`,
       name: `Screened Child (${nextCotNum})`,
@@ -296,13 +404,16 @@ export default function App() {
       mrn: nextMrn,
       admissionDate: new Date().toISOString().split('T')[0],
       input: {
-        ...activePatient.input,
+        calculation_mode: 'Full WHO Assessment + Calculator',
+        therapeutic_phase: 'F-75 Stabilization',
+        feeding_interval_hours: 3,
+        local_milk_source: 'Dried Skimmed Milk Powder',
+        ...baseInput,
         weight_kg: childData.weight_kg ?? 7.0,
         height_cm: childData.height_cm ?? 70.0,
         age_months: childData.age_months ?? 12,
         sex: childData.sex ?? 'Boy',
         edema_severity: childData.edema_severity ?? 'None',
-        therapeutic_phase: 'F-75 Stabilization',
         cot_number: nextCotNum,
         mrn: nextMrn,
         patient_name: `Screened Child (${nextCotNum})`,
@@ -317,8 +428,39 @@ export default function App() {
     setActiveTab('outpatient');
   };
 
+  const renderEmptyWardPrompt = () => (
+    <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4 my-8 shadow-xs">
+      <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center mx-auto">
+        <Bed className="w-6 h-6" />
+      </div>
+      <div className="space-y-1">
+        <h3 className="font-serif text-xl font-medium text-slate-900">No active inpatient</h3>
+        <p className="text-xs text-slate-500 leading-relaxed font-sans">
+          The ward roster currently has zero admitted children. Admit a child or use the quick screener to begin therapeutic care planning.
+        </p>
+      </div>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('ward')}
+          className="w-full sm:w-auto px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors min-h-[40px]"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Admit child to ward</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('screener')}
+          className="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors min-h-[40px]"
+        >
+          <span>Open screener</span>
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-100 text-slate-900 flex flex-col font-sans antialiased pb-20 lg:pb-8">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 text-slate-900 flex flex-col font-sans antialiased pb-20 lg:pb-8">
       {/* Top Header with Interactive Patient Switcher & Notice */}
       <ClinicalHeader
         onPrint={() => {
@@ -339,7 +481,7 @@ export default function App() {
         activeReminderCount={reminders.filter((r) => !r.completed).length}
         onOpenReminders={() => setShowRemindersModal(true)}
         pinLockEnabled={settings.pinLockEnabled}
-        onLockScreen={() => setIsLocked(true)}
+        onLockScreen={() => setLockState(true)}
       />
 
       {/* Top Slide-Down Alert Banner for Due/Overdue SAM/MAM Reminders */}
@@ -353,10 +495,11 @@ export default function App() {
 
       {/* Main Content Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 overflow-x-hidden">
-        {/* Desktop View Navigation Pill Tabs */}
-        <div className="hidden lg:flex items-center justify-between bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
+        {/* Desktop View Navigation Pill Tabs (Clean segmented control with signature PediCal blue) */}
+        <div className="hidden lg:flex items-center justify-between bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center gap-1 text-xs">
             {[
+              { id: 'today', label: 'Today' },
               { id: 'screener', label: 'Screener' },
               { id: 'ward', label: `Ward (${patients.length})` },
               { id: 'calculator', label: 'Inpatient' },
@@ -372,10 +515,10 @@ export default function App() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-1.5 px-3 rounded-lg font-medium transition-colors ${
+                className={`py-1.5 px-3 rounded-xl font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'bg-blue-700 text-white shadow-xs font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
                 {tab.label}
@@ -386,17 +529,38 @@ export default function App() {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              disabled={!activePatient}
               onClick={() => {
+                if (!activePatient) return;
                 setPrintBatchMode(false);
                 setShowPrintModal(true);
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 border border-slate-200 bg-white rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:pointer-events-none shadow-xs"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print {activePatient.cotNumber}</span>
+              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <span>Print {activePatient ? activePatient.cotNumber : 'Bed'}</span>
             </button>
           </div>
         </div>
+
+        {/* TAB: TODAY DASHBOARD */}
+        {activeTab === 'today' && (
+          <TodayDashboard
+            patients={patients}
+            reminders={reminders}
+            facilityName={settings.facilityName}
+            onNavigate={(tab: string, patientId?: string) => {
+              if (patientId) {
+                setActivePatientId(patientId);
+              }
+              setActiveTab(tab);
+            }}
+            onAdmitNewChild={() => {
+              setActiveTab('ward');
+            }}
+            onOpenReminders={() => setShowRemindersModal(true)}
+          />
+        )}
 
         {/* TAB: QUICK SCREENER */}
         {activeTab === 'screener' && (
@@ -423,7 +587,7 @@ export default function App() {
         )}
 
         {/* TAB 1: CALCULATOR */}
-        {activeTab === 'calculator' && (
+        {activeTab === 'calculator' && (!activePatient || !input || !evaluation ? renderEmptyWardPrompt() : (
           <div className="space-y-4">
             {/* Sticky Key Output Summary Bar */}
             <div className="sticky top-[52px] sm:top-[58px] z-20 bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2">
@@ -544,10 +708,10 @@ export default function App() {
               onNavigateToChart={() => setActiveTab('chart')}
             />
           </div>
-        )}
+        ))}
 
         {/* TAB: RESOMAL REHYDRATION (Ghana Health Service / UNICEF IMAM Protocol) */}
-        {activeTab === 'resomal' && (
+        {activeTab === 'resomal' && (!activePatient || !input ? renderEmptyWardPrompt() : (
           <div className="space-y-6">
             <ReSoMalManagementSection
               initialWeightKg={input.weight_kg}
@@ -558,7 +722,7 @@ export default function App() {
               onJumpToF75={() => setActiveTab('calculator')}
             />
           </div>
-        )}
+        ))}
 
         {/* TAB: OUTPATIENT MANAGEMENT (OTP / CMAM / RUTF) */}
         {activeTab === 'outpatient' && (
@@ -570,7 +734,7 @@ export default function App() {
         )}
 
         {/* TAB 2: INTERACTIVE WHO GROWTH CHART (Plottable Graphs) */}
-        {activeTab === 'chart' && (
+        {activeTab === 'chart' && (!activePatient || !input ? renderEmptyWardPrompt() : (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
               <div>
@@ -603,10 +767,10 @@ export default function App() {
               onUpdateSex={handleChartUpdateSex}
             />
           </div>
-        )}
+        ))}
 
         {/* TAB 3: FEEDING TARGETS */}
-        {activeTab === 'feeding' && (
+        {activeTab === 'feeding' && (!activePatient || !input || !evaluation ? renderEmptyWardPrompt() : (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
@@ -655,17 +819,22 @@ export default function App() {
             </div>
 
             <BedsideFeedingSchedule
+              patientId={activePatient.id}
               feedingSummary={evaluation.feedingSummary}
               patientWeight={input.weight_kg}
               patientName={activePatient.name}
               cotNumber={activePatient.cotNumber}
               therapeuticPhase={input.therapeutic_phase}
+              initialRecords={activePatient.feedingRecords}
+              initialShiftStartTime={activePatient.shiftStartTime}
+              initialDietitianBatchPrepTime={activePatient.dietitianBatchPrepTime}
+              onUpdateFeedingRecords={handleUpdatePatientFeedingRecords}
             />
           </div>
-        )}
+        ))}
 
         {/* TAB 4: MANUAL BATCH RECIPE */}
-        {activeTab === 'recipe' && (
+        {activeTab === 'recipe' && (!activePatient || !input || !evaluation ? renderEmptyWardPrompt() : (
           <div className="space-y-6">
             {evaluation.safety.rule2FluidOverloadHalted ? (
               <div className="bg-rose-50 border-2 border-rose-600 rounded-xl p-6 text-rose-950 space-y-3">
@@ -772,20 +941,25 @@ export default function App() {
               </div>
             ) : null}
           </div>
-        )}
+        ))}
 
         {/* TAB 5: BEDSIDE LOG */}
-        {activeTab === 'schedule' && (
+        {activeTab === 'schedule' && (!activePatient || !input || !evaluation ? renderEmptyWardPrompt() : (
           <div className="space-y-6">
             <BedsideFeedingSchedule
+              patientId={activePatient.id}
               feedingSummary={evaluation.feedingSummary}
               patientWeight={input.weight_kg}
               patientName={activePatient.name}
               cotNumber={activePatient.cotNumber}
               therapeuticPhase={input.therapeutic_phase}
+              initialRecords={activePatient.feedingRecords}
+              initialShiftStartTime={activePatient.shiftStartTime}
+              initialDietitianBatchPrepTime={activePatient.dietitianBatchPrepTime}
+              onUpdateFeedingRecords={handleUpdatePatientFeedingRecords}
             />
           </div>
-        )}
+        ))}
 
         {/* TAB 6: PROTOCOLS & REFERENCES (Consolidated at one single place) */}
         {activeTab === 'reference' && (
@@ -795,7 +969,7 @@ export default function App() {
         )}
 
         {/* Client-Side Privacy & Legal Notice Footer */}
-        <footer className="pt-6 border-t border-slate-200 text-slate-500 text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+        <footer className="pt-6 border-t border-stone-200/80 text-stone-500 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 font-sans">
           <div className="flex items-center gap-2">
             <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>
@@ -806,9 +980,9 @@ export default function App() {
           <button
             type="button"
             onClick={handleOpenDisclaimer}
-            className="text-blue-700 hover:text-blue-900 font-semibold underline flex items-center gap-1 shrink-0"
+            className="text-stone-800 hover:text-stone-950 font-medium underline flex items-center gap-1 shrink-0 transition-colors"
           >
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
             <span>Clinical Reference &amp; Privacy Notice</span>
           </button>
         </footer>
@@ -822,7 +996,7 @@ export default function App() {
       />
 
       {/* Bedside Order Print Modal (Supports Single Patient & Batch Ward) */}
-      {showPrintModal && (
+      {showPrintModal && evaluation && (
         <PrintableBedsideCard
           evaluation={evaluation}
           allPatients={patients}
@@ -841,7 +1015,7 @@ export default function App() {
         onClose={() => setShowSettingsModal(false)}
         onResetWard={() => {
           setPatients(INITIAL_WARD_PATIENTS);
-          setActivePatientId(INITIAL_WARD_PATIENTS[0].id);
+          setActivePatientId(INITIAL_WARD_PATIENTS[0]?.id || '');
         }}
         onOpenPrintModal={() => {
           setPrintBatchMode(false);
@@ -880,7 +1054,7 @@ export default function App() {
           clinicianRole={settings.clinicianRole}
           correctPin={settings.pinCode || '1234'}
           recoveryKey={settings.recoveryKey}
-          onUnlock={() => setIsLocked(false)}
+          onUnlock={() => setLockState(false)}
           onEmergencyWipe={handleEmergencyWipe}
         />
       )}

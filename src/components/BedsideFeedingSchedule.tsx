@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FeedingTargetSummary } from '../utils/clinicalCalculations';
+import { FeedRecord } from '../data/wardPatients';
 import {
   Check,
   AlertCircle,
@@ -20,55 +21,81 @@ import {
 } from 'lucide-react';
 import { ClinicalNumberInput } from './ClinicalNumberInput';
 
-export interface FeedRecord {
-  id: number;
-  timeSlot: string; // Scheduled slot (e.g. "06:00")
-  timeAdministered: string; // Time nurse gave/dispensed feed (e.g. "06:00")
-  timePrepared?: string; // Backwards-compatible alias
-  preparedMl: number; // Dose dispensed from 24h batch for this feed (mL)
-  estimatedFinishTime: string; // e.g. "06:35" (30-35 min window)
-  toleratedMl: number; // Volume successfully consumed / tolerated (mL)
-  regurgitation: 'None' | 'Spit-up (<5 mL)' | 'Vomited (>50%)';
-  route: 'Oral (Cup/Spoon)' | 'NG Tube';
-  status: 'pending' | 'completed' | 'shortfall' | 'vomited';
-  durationMinutes: number; // standard safe duration (30-40 min)
-  notes?: string;
+export type { FeedRecord };
+
+const FEEDING_STORAGE_PREFIX = 'pedical_feed_records_patient_';
+
+export function getPersistedPatientFeeding(patientId: string): {
+  records?: FeedRecord[];
+  shiftStartTime?: string;
+  dietitianBatchPrepTime?: string;
+} | null {
+  if (!patientId) return null;
+  try {
+    const raw = localStorage.getItem(`${FEEDING_STORAGE_PREFIX}${patientId}`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.records)) {
+        return parsed;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+export function savePersistedPatientFeeding(
+  patientId: string,
+  data: {
+    records: FeedRecord[];
+    shiftStartTime?: string;
+    dietitianBatchPrepTime?: string;
+  }
+): void {
+  if (!patientId) return;
+  try {
+    localStorage.setItem(`${FEEDING_STORAGE_PREFIX}${patientId}`, JSON.stringify(data));
+  } catch {
+    // ignore
+  }
 }
 
 interface BedsideFeedingScheduleProps {
+  patientId?: string;
   feedingSummary: FeedingTargetSummary;
   patientWeight: number;
   patientName?: string;
   cotNumber?: string;
   therapeuticPhase?: string;
+  initialRecords?: FeedRecord[];
+  initialShiftStartTime?: string;
+  initialDietitianBatchPrepTime?: string;
+  onUpdateFeedingRecords?: (
+    patientId: string,
+    records: FeedRecord[],
+    shiftStartTime?: string,
+    dietitianBatchPrepTime?: string
+  ) => void;
 }
 
 export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
+  patientId = '',
   feedingSummary,
   patientWeight,
   patientName = 'Active Inpatient',
   cotNumber = 'Cot 01',
   therapeuticPhase = 'F-75 Stabilization',
+  initialRecords,
+  initialShiftStartTime,
+  initialDietitianBatchPrepTime,
+  onUpdateFeedingRecords,
 }) => {
-  const [shiftStartTime, setShiftStartTime] = useState<string>('06:00');
   const [defaultDurationMin] = useState<number>(35);
   const [copied, setCopied] = useState(false);
   const [showCollectiveInfo, setShowCollectiveInfo] = useState<boolean>(true);
   const [showBatchAudit, setShowBatchAudit] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'recorded' | 'shortfall'>('all');
-
-  // Dietitian 24-Hour Batch Preparation Tracking
-  // Dietitians prepare the 24-hour supply at a central kitchen for ward nurses to administer
-  const [dietitianBatchPrepTime, setDietitianBatchPrepTime] = useState<string>('06:00');
-  const [dietitianBatchTotalMl, setDietitianBatchTotalMl] = useState<number>(feedingSummary.dailyVolume);
-  const [physicalStockCheckActive, setPhysicalStockCheckActive] = useState<boolean>(false);
-  const [actualMeasuredRemainingMl, setActualMeasuredRemainingMl] = useState<number>(feedingSummary.dailyVolume);
-
-  // Sync default batch total if dailyVolume changes
-  useEffect(() => {
-    setDietitianBatchTotalMl(feedingSummary.dailyVolume);
-    setActualMeasuredRemainingMl(feedingSummary.dailyVolume);
-  }, [feedingSummary.dailyVolume]);
 
   // Calculate estimated finish time from administration start time and duration
   function calculateFinishTime(startTimeStr: string, durationMin: number = 35): string {
@@ -110,17 +137,112 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
     return result;
   }
 
-  const [records, setRecords] = useState<FeedRecord[]>(() =>
-    generateSchedule(
+  // Safe resolution helpers checking: prop -> namespaced persistent storage -> fresh default
+  const resolveShiftStart = (pid: string) => {
+    if (initialShiftStartTime) return initialShiftStartTime;
+    const persisted = getPersistedPatientFeeding(pid);
+    if (persisted?.shiftStartTime) return persisted.shiftStartTime;
+    return '06:00';
+  };
+
+  const resolveBatchTime = (pid: string) => {
+    if (initialDietitianBatchPrepTime) return initialDietitianBatchPrepTime;
+    const persisted = getPersistedPatientFeeding(pid);
+    if (persisted?.dietitianBatchPrepTime) return persisted.dietitianBatchPrepTime;
+    return '06:00';
+  };
+
+  const resolveRecords = (pid: string, shift: string): FeedRecord[] => {
+    if (initialRecords && Array.isArray(initialRecords) && initialRecords.length > 0) {
+      return initialRecords;
+    }
+    const persisted = getPersistedPatientFeeding(pid);
+    if (persisted?.records && Array.isArray(persisted.records) && persisted.records.length > 0) {
+      return persisted.records;
+    }
+    return generateSchedule(
       feedingSummary.feedsPerDay,
       feedingSummary.feedingIntervalHours,
-      shiftStartTime,
+      shift,
       feedingSummary.targetVolumePerFeed,
       defaultDurationMin
-    )
-  );
+    );
+  };
+
+  const [shiftStartTime, setShiftStartTime] = useState<string>(() => resolveShiftStart(patientId));
+  const [dietitianBatchPrepTime, setDietitianBatchPrepTime] = useState<string>(() => resolveBatchTime(patientId));
+  const [records, setRecords] = useState<FeedRecord[]>(() => resolveRecords(patientId, resolveShiftStart(patientId)));
+
+  const [dietitianBatchTotalMl, setDietitianBatchTotalMl] = useState<number>(feedingSummary.dailyVolume);
+  const [physicalStockCheckActive, setPhysicalStockCheckActive] = useState<boolean>(false);
+  const [actualMeasuredRemainingMl, setActualMeasuredRemainingMl] = useState<number>(feedingSummary.dailyVolume);
+
+  // Sync default batch total if dailyVolume changes
+  useEffect(() => {
+    setDietitianBatchTotalMl(feedingSummary.dailyVolume);
+    setActualMeasuredRemainingMl(feedingSummary.dailyVolume);
+  }, [feedingSummary.dailyVolume]);
+
+  // Synchronize when active patientId changes without cross-over
+  const activePatientIdRef = useRef(patientId);
+  useEffect(() => {
+    if (patientId !== activePatientIdRef.current) {
+      activePatientIdRef.current = patientId;
+      const newShift = resolveShiftStart(patientId);
+      const newBatch = resolveBatchTime(patientId);
+      const newRecs = resolveRecords(patientId, newShift);
+      setShiftStartTime(newShift);
+      setDietitianBatchPrepTime(newBatch);
+      setRecords(newRecs);
+    }
+  }, [patientId, initialRecords, initialShiftStartTime, initialDietitianBatchPrepTime]);
+
+  // Central persistence writer
+  const persistChanges = (
+    updatedRecords: FeedRecord[],
+    updatedShift: string = shiftStartTime,
+    updatedBatch: string = dietitianBatchPrepTime
+  ) => {
+    if (patientId) {
+      savePersistedPatientFeeding(patientId, {
+        records: updatedRecords,
+        shiftStartTime: updatedShift,
+        dietitianBatchPrepTime: updatedBatch,
+      });
+      onUpdateFeedingRecords?.(patientId, updatedRecords, updatedShift, updatedBatch);
+    }
+  };
+
+  const updateRecords = (updater: (prev: FeedRecord[]) => FeedRecord[]) => {
+    setRecords((prev) => {
+      const next = updater(prev);
+      persistChanges(next);
+      return next;
+    });
+  };
+
+  // Reconcile if feeding target prescription changes, strictly preserving non-pending entries
+  const lastSummaryRef = useRef({
+    feedsPerDay: feedingSummary.feedsPerDay,
+    feedingIntervalHours: feedingSummary.feedingIntervalHours,
+    targetVolumePerFeed: feedingSummary.targetVolumePerFeed,
+  });
 
   useEffect(() => {
+    const last = lastSummaryRef.current;
+    if (
+      last.feedsPerDay === feedingSummary.feedsPerDay &&
+      last.feedingIntervalHours === feedingSummary.feedingIntervalHours &&
+      last.targetVolumePerFeed === feedingSummary.targetVolumePerFeed
+    ) {
+      return;
+    }
+    lastSummaryRef.current = {
+      feedsPerDay: feedingSummary.feedsPerDay,
+      feedingIntervalHours: feedingSummary.feedingIntervalHours,
+      targetVolumePerFeed: feedingSummary.targetVolumePerFeed,
+    };
+
     setRecords((prev) => {
       const newSchedule = generateSchedule(
         feedingSummary.feedsPerDay,
@@ -130,7 +252,7 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
         defaultDurationMin
       );
 
-      return newSchedule.map((fresh, idx) => {
+      const reconciled = newSchedule.map((fresh, idx) => {
         const existing = prev[idx];
         if (existing && existing.status !== 'pending') {
           return {
@@ -148,6 +270,9 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
         }
         return fresh;
       });
+
+      persistChanges(reconciled);
+      return reconciled;
     });
   }, [
     feedingSummary.feedsPerDay,
@@ -167,12 +292,24 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
     const now = new Date();
     const currentH = String(now.getHours()).padStart(2, '0');
     const currentM = String(now.getMinutes()).padStart(2, '0');
-    setDietitianBatchPrepTime(`${currentH}:${currentM}`);
+    const newTime = `${currentH}:${currentM}`;
+    setDietitianBatchPrepTime(newTime);
+    persistChanges(records, shiftStartTime, newTime);
+  };
+
+  const handleShiftStartTimeChange = (newTime: string) => {
+    setShiftStartTime(newTime);
+    persistChanges(records, newTime, dietitianBatchPrepTime);
+  };
+
+  const handleDietitianBatchPrepTimeChange = (newTime: string) => {
+    setDietitianBatchPrepTime(newTime);
+    persistChanges(records, shiftStartTime, newTime);
   };
 
   // Update administration time for a feed
   const updateTimeAdministered = (id: number, newTime: string) => {
-    setRecords((prev) =>
+    updateRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
         return {
@@ -187,7 +324,7 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
 
   // Update volume drawn from batch for this feed
   const updatePreparedMl = (id: number, val: number) => {
-    setRecords((prev) =>
+    updateRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
         return {
@@ -200,7 +337,7 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
 
   // Update volume tolerated
   const updateToleratedMl = (id: number, val: number) => {
-    setRecords((prev) =>
+    updateRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
         let newStatus: FeedRecord['status'] = 'completed';
@@ -220,7 +357,7 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
 
   // Set quick preset tolerance %
   const setQuickTolerance = (id: number, fraction: number) => {
-    setRecords((prev) =>
+    updateRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
         const volume = Math.round(r.preparedMl * fraction);
@@ -241,7 +378,7 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
 
   // Update route
   const toggleRoute = (id: number) => {
-    setRecords((prev) =>
+    updateRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
         return {
@@ -254,7 +391,7 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
 
   // Update regurgitation
   const setRegurgitation = (id: number, reg: FeedRecord['regurgitation']) => {
-    setRecords((prev) =>
+    updateRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
         let newStatus = r.status;
@@ -277,7 +414,7 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
 
   // Toggle feed status cycle
   const toggleFeedStatus = (id: number) => {
-    setRecords((prev) =>
+    updateRecords((prev) =>
       prev.map((r) => {
         if (r.id !== id) return r;
         if (r.status === 'pending') {
@@ -307,17 +444,30 @@ export const BedsideFeedingSchedule: React.FC<BedsideFeedingScheduleProps> = ({
     );
   };
 
+  // Update notes
+  const updateNotes = (id: number, notes: string) => {
+    updateRecords((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        return {
+          ...r,
+          notes,
+        };
+      })
+    );
+  };
+
   const resetAll = () => {
     if (confirm('Reset entire 24-hour feeding log to initial scheduled state?')) {
-      setRecords(
-        generateSchedule(
-          feedingSummary.feedsPerDay,
-          feedingSummary.feedingIntervalHours,
-          shiftStartTime,
-          feedingSummary.targetVolumePerFeed,
-          defaultDurationMin
-        )
+      const fresh = generateSchedule(
+        feedingSummary.feedsPerDay,
+        feedingSummary.feedingIntervalHours,
+        shiftStartTime,
+        feedingSummary.targetVolumePerFeed,
+        defaultDurationMin
       );
+      setRecords(fresh);
+      persistChanges(fresh);
       setPhysicalStockCheckActive(false);
       setActualMeasuredRemainingMl(dietitianBatchTotalMl);
     }
@@ -425,19 +575,21 @@ Report Generated: ${new Date().toLocaleString()}`;
   });
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-5">
+    <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-5">
       {/* 1. Header Bar: Identity & Global Shift Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <Droplets className="w-5 h-5 text-blue-600" />
-            <h2 className="text-base font-bold text-slate-900 tracking-tight">
-              Inpatient Bedside Feeding Log &amp; Batch Reconciliation
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700">
+              <Droplets className="w-4 h-4" />
+            </div>
+            <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
+              Bedside feeding schedule
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 pl-10.5">
             {cotNumber}: <strong className="text-slate-800">{patientName}</strong> ({patientWeight} kg) &middot;{' '}
-            <span className="font-semibold text-blue-800">{therapeuticPhase}</span> &middot; Target:{' '}
+            <span className="font-semibold text-blue-700">{therapeuticPhase}</span> &middot; Target:{' '}
             <strong className="text-slate-900">{feedingSummary.targetVolumePerFeed} mL</strong> q
             {feedingSummary.feedingIntervalHours}h ({feedingSummary.feedsPerDay} feeds/day)
           </p>
@@ -447,11 +599,11 @@ Report Generated: ${new Date().toLocaleString()}`;
           {/* Shift Start Picker */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700">
             <Clock className="w-3.5 h-3.5 text-slate-500" />
-            <span>Shift Start:</span>
+            <span>Shift:</span>
             <input
               type="time"
               value={shiftStartTime}
-              onChange={(e) => setShiftStartTime(e.target.value)}
+              onChange={(e) => handleShiftStartTimeChange(e.target.value)}
               className="px-1.5 py-0.5 rounded border border-slate-300 bg-white font-bold text-xs"
             />
           </div>
@@ -464,7 +616,7 @@ Report Generated: ${new Date().toLocaleString()}`;
             title="Copy clinical handover note"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied Note' : 'Handover Note'}</span>
+            <span>{copied ? 'Copied' : 'Handover'}</span>
           </button>
 
           {/* Reset Schedule */}
@@ -488,10 +640,10 @@ Report Generated: ${new Date().toLocaleString()}`;
             </div>
             <div>
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                Dietitian 24-Hour Batch Custody &amp; Stock Audit
+                24h batch custody &amp; audit
               </h3>
               <p className="text-[11px] text-slate-500">
-                Central preparation timestamp and remaining ward stock reconciliation
+                Batch prep time and ward stock tracking
               </p>
             </div>
           </div>
@@ -527,7 +679,7 @@ Report Generated: ${new Date().toLocaleString()}`;
                   <input
                     type="time"
                     value={dietitianBatchPrepTime}
-                    onChange={(e) => setDietitianBatchPrepTime(e.target.value)}
+                    onChange={(e) => handleDietitianBatchPrepTimeChange(e.target.value)}
                     className="px-2 py-1 border border-slate-300 rounded font-bold text-slate-900 bg-slate-50 text-sm focus:bg-white"
                   />
                   <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -1160,6 +1312,17 @@ Report Generated: ${new Date().toLocaleString()}`;
                     <option value="Spit-up (<5 mL)">Minor Spit-up (&lt;5 mL)</option>
                     <option value="Vomited (>50%)">Vomited (&gt;50% lost)</option>
                   </select>
+                </div>
+
+                {/* Bedside Tolerance / Clinical Note */}
+                <div className="pt-0.5">
+                  <input
+                    type="text"
+                    value={record.notes || ''}
+                    onChange={(e) => updateNotes(record.id, e.target.value)}
+                    placeholder="Tolerance note (e.g., slow feeder, spit-up)..."
+                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white focus:ring-1 focus:ring-blue-600 focus:border-blue-600 text-slate-800 placeholder-slate-400"
+                  />
                 </div>
               </div>
 

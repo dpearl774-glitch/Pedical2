@@ -154,19 +154,19 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
          ========================================================================= */}
       <section
         id="feeding-target-section"
-        className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4"
+        className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
           <div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Feeding targets
+            <h3 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
+              Prescribed feeding targets
             </h3>
             <div className="text-xs text-slate-500 mt-0.5">
-              {input.therapeutic_phase} &middot; WHO Table 7
+              {input.therapeutic_phase} &middot; WHO 2023 Table 7
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">
+            <span className="text-xs px-3 py-1 rounded-xl bg-blue-50 text-blue-800 font-semibold border border-blue-100">
               {feedingSummary.feedsPerDay} feeds/day
             </span>
           </div>
@@ -296,7 +296,7 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
       {input.calculation_mode === 'Full WHO Assessment + Calculator' && growthAssessment && (
         <section
           id="who-growth-section"
-          className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs"
+          className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs"
         >
           <div className="p-4 sm:p-5 flex items-center justify-between gap-3 border-b border-slate-100">
             <button
@@ -305,11 +305,11 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
               className="flex-1 flex items-center justify-between text-left group min-h-[40px]"
             >
               <div>
-                <h3 className="text-base font-bold text-slate-900 tracking-tight group-hover:text-blue-700 transition-colors">
+                <h3 className="font-serif text-lg sm:text-xl text-slate-900 tracking-tight font-normal group-hover:text-blue-700 transition-colors">
                   WHO growth assessment
                 </h3>
                 <div className="text-xs text-slate-500 mt-0.5">
-                  Z-scores and diagnostics
+                  Anthropometric Z-scores and malnutrition diagnostics
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -443,7 +443,7 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
       {!safety.rule2FluidOverloadHalted && recipe && (
         <section
           id="batch-recipe-section"
-          className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs"
+          className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs"
         >
           <div className="p-4 sm:p-5 flex items-center justify-between gap-3 border-b border-slate-100">
             <button
@@ -452,15 +452,15 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
               className="flex-1 flex items-center justify-between text-left group min-h-[40px]"
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700">
                   <Beaker className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 tracking-tight group-hover:text-blue-700 transition-colors">
-                    Batch recipe
+                  <h3 className="font-serif text-lg sm:text-xl text-slate-900 tracking-tight font-normal group-hover:text-blue-700 transition-colors">
+                    24h manual kitchen batch recipe
                   </h3>
                   <div className="text-xs text-slate-500 mt-0.5">
-                    {recipe.dailyVolume} mL &middot; scale: {recipe.scaleFactor} &middot; {recipe.milkBase.name}
+                    {recipe.dailyVolume} mL &middot; scale factor {recipe.scaleFactor} &middot; {recipe.milkBase.name}
                   </div>
                 </div>
               </div>

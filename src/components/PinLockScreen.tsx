@@ -158,7 +158,7 @@ export const PinLockScreen: React.FC<PinLockScreenProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-4 select-none safe-bottom">
+    <div className="fixed inset-0 z-50 bg-slate-950/98 backdrop-blur-xl flex flex-col items-center justify-center p-4 select-none safe-bottom">
       <div className="max-w-sm w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col items-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
         {/* App Branding & Bedside Identity */}
         <div className="text-center space-y-1">

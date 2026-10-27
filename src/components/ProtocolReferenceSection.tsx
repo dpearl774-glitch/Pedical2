@@ -19,44 +19,45 @@ import {
 
 export const ProtocolReferenceSection: React.FC = () => {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-7 shadow-xs space-y-6">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-xs space-y-6">
       {/* Header with Dual Badges: GHS/UNICEF IMAM & WHO 2023 */}
       <div className="border-b border-slate-200 pb-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-teal-700" />
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-              Ghana Health Service (GHS) &amp; WHO Inpatient Malnutrition Protocols
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
+              Clinical protocols &amp; references
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-teal-100 border border-teal-200 text-teal-900 font-sans text-[11px] font-bold">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-teal-50 border border-teal-200 text-teal-900 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 text-teal-700" />
-              <span>GHS / UNICEF IMAM Aligned</span>
+              <span>GHS IMAM</span>
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-100 border border-blue-200 text-blue-900 font-sans text-[11px] font-bold">
-              <span>WHO 2023 Guideline Aligned</span>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold">
+              <span>WHO 2023</span>
             </span>
           </div>
         </div>
         <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-          Operationalized for Ghanaian Registered Dietitians (RDs), Pediatric Nutrition Officers, and Medical Officers.
-          Grounded in the <strong>Ghana Health Service (GHS) / UNICEF National Guidelines for Integrated Management of Acute Malnutrition (IMAM) &amp; CMAM Protocols</strong>, harmonized with the <em>{WHO_GUIDELINE_FULL_TITLE}</em>.
+          Ghana Health Service IMAM national guidelines and WHO 2023 acute malnutrition standards.
         </p>
       </div>
 
       {/* 1. GHANA HEALTH SERVICE (GHS) / UNICEF CMAM & IMAM FRAMEWORK */}
       <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/50 space-y-3.5">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-teal-700 text-white flex items-center justify-center font-black text-xs">
+          <div className="w-7 h-7 rounded-lg bg-teal-700 text-white flex items-center justify-center font-bold text-xs">
             GHS
           </div>
           <div>
             <h3 className="text-sm font-bold text-teal-950">
-              Ghana Health Service (GHS) CMAM &amp; IMAM 4-Pillar Continuum
+              GHS CMAM / IMAM continuum
             </h3>
             <p className="text-[11px] text-teal-800">
-              National strategy for preventing and managing severe wasting and nutritional oedema
+              National strategy for severe wasting and nutritional edema
             </p>
           </div>
         </div>
@@ -109,7 +110,7 @@ export const ProtocolReferenceSection: React.FC = () => {
         <div className="flex items-center gap-2">
           <Stethoscope className="w-5 h-5 text-teal-700" />
           <h3 className="text-sm font-bold text-slate-900">
-            The 10 Essential Inpatient Stabilization Steps (Ghana GHS / IMAM)
+            10 essential inpatient steps
           </h3>
         </div>
 

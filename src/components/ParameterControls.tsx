@@ -70,15 +70,15 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
   const isFullAssessment = input.calculation_mode === 'Full WHO Assessment + Calculator';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-5">
+    <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-5">
       {/* Header bar: Title & Reset Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 className="text-base font-bold text-slate-900 tracking-tight">
-            Parameters
+          <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
+            Clinical parameters
           </h2>
           <div className="text-xs text-slate-500 mt-0.5">
-            Anthropometrics and feeding settings
+            Anthropometric inputs and therapeutic feeding regimen
           </div>
         </div>
 

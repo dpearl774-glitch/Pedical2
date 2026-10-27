@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Calculator, TrendingUp, Droplets, Beaker, HeartHandshake, Activity } from 'lucide-react';
+import { Sun, Users, Calculator, TrendingUp, Droplets, HeartHandshake, Activity } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: string;
@@ -13,12 +13,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   patientCount = 5,
 }) => {
   const tabs = [
+    { id: 'today', label: 'Today', icon: Sun },
     { id: 'screener', label: 'Screen', icon: Activity },
     { id: 'ward', label: `Ward (${patientCount})`, icon: Users },
     { id: 'calculator', label: 'Inpatient', icon: Calculator },
     { id: 'schedule', label: 'Feed Log', icon: Droplets },
     { id: 'outpatient', label: 'Outpatient', icon: HeartHandshake },
-    { id: 'chart', label: 'Growth', icon: TrendingUp },
   ];
 
   return (
@@ -43,7 +43,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 <span className="absolute top-0 w-8 h-0.5 bg-blue-700 rounded-full" />
               )}
               <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.25]' : 'stroke-[1.75]'}`} />
-              <span className="text-[10px] tracking-tight mt-1 truncate max-w-[56px]">
+              <span className="text-[10px] tracking-tight mt-1 truncate max-w-[56px] font-sans">
                 {tab.label}
               </span>
             </button>

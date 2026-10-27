@@ -143,17 +143,16 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
       <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-800">
-                <HeartHandshake className="w-5 h-5" />
-              </span>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-                Outpatient Therapeutic Care &middot; WHO 2023 OTP Engine
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700">
+                <HeartHandshake className="w-4 h-4" />
+              </div>
+              <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
+                Outpatient therapeutic program (OTP)
               </h2>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Clinical decision support for Outpatient Therapeutic Programs (OTP / CMAM), Ready-to-Use
-              Therapeutic Food (RUTF) rations, WHO Appetite Testing, and routine medical protocols.
+            <p className="text-xs text-slate-500 mt-1 pl-10.5">
+              RUTF protocol dosing, WHO appetite test validation, and routine community medications.
             </p>
           </div>
 
@@ -166,7 +165,7 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
                 title="Sync clinical parameters from current inpatient bed"
               >
                 <User className="w-3.5 h-3.5" />
-                <span>Sync Active Bed ({currentWardPatient.cotNumber})</span>
+                <span>Sync bed ({currentWardPatient.cotNumber})</span>
               </button>
             )}
 
@@ -176,16 +175,16 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors flex items-center gap-1.5 min-h-[36px]"
             >
               {copiedSummary ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedSummary ? 'Copied' : 'Copy OTP Summary'}</span>
+              <span>{copiedSummary ? 'Copied' : 'Copy summary'}</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrintOtpSheet}
-              className="hidden sm:inline-flex px-3.5 py-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors items-center gap-1.5 shadow-xs min-h-[36px]"
+              className="hidden sm:inline-flex px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors items-center gap-1.5 shadow-xs min-h-[36px]"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print OTP Sheet</span>
+              <span>Print sheet</span>
             </button>
           </div>
         </div>
@@ -210,7 +209,7 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
                 ) : (
                   <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0" />
                 )}
-                <span className="font-black text-sm uppercase tracking-wide">
+                <span className="font-bold text-sm tracking-wide">
                   {triage.triageCategory}
                 </span>
                 {triage.referralUrgency && triage.referralUrgency !== 'None' && (
@@ -233,9 +232,9 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               <button
                 type="button"
                 onClick={onNavigateToInpatientWard}
-                className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-xl shadow-xs shrink-0 flex items-center justify-center gap-1.5 min-h-[42px]"
+                className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-semibold text-xs rounded-xl shadow-xs shrink-0 flex items-center justify-center gap-1.5 min-h-[42px]"
               >
-                <span>Transfer to Inpatient F-75 Stabilization</span>
+                <span>Transfer to inpatient</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
@@ -250,8 +249,8 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
           {/* Form Controls */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                1. Outpatient Clinical Inputs
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                1. Clinical inputs
               </h3>
               <span className="text-[11px] font-mono text-slate-500">De-identified</span>
             </div>
@@ -357,7 +356,7 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
                     }`}
                   >
                     <span>{grade}</span>
-                    {edemaGrade === grade && <span className="text-xs">✓</span>}
+                    {edemaGrade === grade && <Check className="w-3.5 h-3.5 text-blue-700" />}
                   </button>
                 ))}
               </div>
@@ -404,7 +403,7 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
                             : 'border-slate-300 bg-white'
                         }`}
                       >
-                        {isChecked && '✓'}
+                        {isChecked && <Check className="w-3 h-3 text-white" />}
                       </span>
                     </button>
                   );
@@ -418,8 +417,8 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-blue-700" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                  2. WHO Appetite Test (30-Minute Protocol)
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                  2. WHO appetite test
                 </h3>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-900 font-bold">
@@ -527,21 +526,21 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <PackageCheck className="w-4 h-4 text-emerald-700" />
-                  <span>3. RUTF Prescription &amp; Ration Calculation</span>
+                  <span>3. RUTF ration</span>
                 </h3>
                 <div className="text-xs text-slate-500 mt-0.5">
-                  Standard lipid-based nutrient paste (92 g sachet &middot; ~500 kcal / 12.8 g protein)
+                  Standard 92g sachet &middot; ~500 kcal / 12.8g protein
                 </div>
               </div>
               <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-200">
-                {rutfRation.sachetsPerDay} sachets / day
+                {rutfRation.sachetsPerDay} sachets/day
               </span>
             </div>
 
             {/* Big Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200">
-                <span className="text-xs font-semibold text-emerald-900 uppercase">Daily Dose</span>
+                <span className="text-xs font-semibold text-emerald-900">Daily dose</span>
                 <div className="text-3xl font-bold text-slate-900 mt-1">
                   {rutfRation.sachetsPerDay}
                   <span className="text-sm font-normal text-emerald-700 ml-1">sachets/d</span>
@@ -552,24 +551,24 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               </div>
 
               <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200">
-                <span className="text-xs font-semibold text-blue-900 uppercase">7-Day Supply (1 Week)</span>
+                <span className="text-xs font-semibold text-blue-900">7-day supply</span>
                 <div className="text-3xl font-bold text-slate-900 mt-1">
                   {rutfRation.sachets7Days}
                   <span className="text-sm font-normal text-blue-700 ml-1">sachets</span>
                 </div>
                 <div className="text-xs text-blue-800 mt-1 font-medium">
-                  For standard weekly OTP follow-up clinic
+                  Standard weekly visit
                 </div>
               </div>
 
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="text-xs font-semibold text-slate-700 uppercase">14-Day Supply (2 Weeks)</span>
+                <span className="text-xs font-semibold text-slate-700">14-day supply</span>
                 <div className="text-3xl font-bold text-slate-900 mt-1">
                   {rutfRation.sachets14Days}
                   <span className="text-sm font-normal text-slate-600 ml-1">sachets</span>
                 </div>
                 <div className="text-xs text-slate-600 mt-1 font-medium">
-                  For bi-weekly rural or remote distribution
+                  Bi-weekly visit
                 </div>
               </div>
             </div>
@@ -578,23 +577,23 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
             <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-2 text-xs">
               <div className="font-bold text-amber-950 uppercase text-[11px] flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-amber-700" />
-                <span>Essential RUTF Safety &amp; Caregiver Rules</span>
+                <span>RUTF caregiver rules</span>
               </div>
               <ul className="space-y-1 text-slate-700 leading-relaxed text-[11px]">
                 <li>
-                  &bull; <strong>Clean Drinking Water:</strong> RUTF is energy-dense with high renal solute load. Always provide plenty of safe, clean boiled drinking water whenever the child eats RUTF.
+                  &bull; <strong>Clean water:</strong> Provide plenty of clean boiled drinking water with RUTF.
                 </li>
                 <li>
-                  &bull; <strong>Breastmilk First:</strong> For breastfed infants, always breastfeed on demand <em>prior</em> to offering RUTF.
+                  &bull; <strong>Breastmilk first:</strong> Breastfeed on demand prior to offering RUTF.
                 </li>
                 <li>
-                  &bull; <strong>Do NOT Dilute:</strong> Never dissolve or mix RUTF with water or porridge, as moisture invites rapid bacterial growth and diarrhea.
+                  &bull; <strong>Do not dilute:</strong> Never mix RUTF with water or porridge.
                 </li>
                 <li>
-                  &bull; <strong>Strictly NO Iron Drops:</strong> RUTF already contains adequate therapeutic iron (~10-14 mg/100g). Prescribing additional iron supplements creates dangerous iron toxicity.
+                  &bull; <strong>No iron drops:</strong> RUTF already contains therapeutic iron.
                 </li>
                 <li>
-                  &bull; <strong>Medicine, Not Family Food:</strong> RUTF is a prescription medical food solely for the malnourished child; do not share among siblings.
+                  &bull; <strong>Not family food:</strong> For the malnourished child only; do not share.
                 </li>
               </ul>
             </div>
@@ -606,10 +605,10 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               <div className="flex items-center gap-2">
                 <Pill className="w-4 h-4 text-blue-700" />
                 <h3 className="text-sm font-bold text-slate-900">
-                  4. WHO Routine Outpatient Medications
+                  4. Routine medications
                 </h3>
               </div>
-              <span className="text-[11px] font-mono text-slate-500">WHO 2023 Protocol</span>
+              <span className="text-[11px] font-mono text-slate-500">WHO 2023</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -689,28 +688,28 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue-700" />
-                <span>5. Weekly Monitoring &amp; Discharge Criteria (WHO 2023)</span>
+                <span>5. Monitoring &amp; discharge</span>
               </h3>
-              <span className="text-xs font-mono text-slate-500">Continuum of Care</span>
+              <span className="text-xs font-mono text-slate-500">WHO 2023</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200 space-y-2">
                 <div className="font-bold text-emerald-950 uppercase text-[11px] flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                  <span>WHO 2023 Full Recovery Discharge Criteria</span>
+                  <span>Discharge criteria</span>
                 </div>
                 <div className="space-y-1.5 text-slate-700 text-[11px]">
-                  <div>&bull; <strong>Oedema-free:</strong> Bilateral pitting oedema has been absent for at least 14 days (2 consecutive weekly visits).</div>
-                  <div>&bull; <strong>Anthropometric Recovery:</strong> WHZ &ge; -2 SD or MUAC &ge; 125 mm maintained across 2 consecutive visits.</div>
-                  <div>&bull; <strong>Clinically Active:</strong> Child is afebrile, alert, eating family foods alongside breastmilk.</div>
+                  <div>&bull; <strong>Edema-free:</strong> Absent for at least 14 days (2 consecutive weekly visits).</div>
+                  <div>&bull; <strong>Anthropometry:</strong> WHZ &ge; -2 SD or MUAC &ge; 125 mm across 2 visits.</div>
+                  <div>&bull; <strong>Clinical state:</strong> Afebrile, alert, eating family foods alongside breastmilk.</div>
                 </div>
               </div>
 
               <div className="p-3.5 bg-rose-50/60 rounded-xl border border-rose-200 space-y-2">
                 <div className="font-bold text-rose-950 uppercase text-[11px] flex items-center gap-1.5">
                   <AlertOctagon className="w-4 h-4 text-rose-700" />
-                  <span>Red Flags (Transfer to Inpatient Ward)</span>
+                  <span>Red flags (inpatient transfer)</span>
                 </div>
                 <div className="space-y-1.5 text-slate-700 text-[11px]">
                   <div>&bull; Weight loss on 2 consecutive weekly visits.</div>

@@ -6,6 +6,21 @@
 
 import { CalculationInput, evaluatePatient, FullEvaluationResult } from '../utils/clinicalCalculations';
 
+export interface FeedRecord {
+  id: number;
+  timeSlot: string; // Scheduled slot (e.g. "06:00")
+  timeAdministered: string; // Time nurse gave/dispensed feed (e.g. "06:00")
+  timePrepared?: string; // Backwards-compatible alias
+  preparedMl: number; // Dose dispensed from 24h batch for this feed (mL)
+  estimatedFinishTime: string; // e.g. "06:35" (30-35 min window)
+  toleratedMl: number; // Volume successfully consumed / tolerated (mL)
+  regurgitation: 'None' | 'Spit-up (<5 mL)' | 'Vomited (>50%)';
+  route: 'Oral (Cup/Spoon)' | 'NG Tube';
+  status: 'pending' | 'completed' | 'shortfall' | 'vomited';
+  durationMinutes: number; // standard safe duration (30-40 min)
+  notes?: string;
+}
+
 export interface WardPatient {
   id: string;
   cotNumber: string;
@@ -14,6 +29,9 @@ export interface WardPatient {
   admissionDate: string;
   notes?: string;    // Clinical presentation summary (e.g. "Severe bilateral edema +++")
   input: CalculationInput;
+  feedingRecords?: FeedRecord[];
+  shiftStartTime?: string;
+  dietitianBatchPrepTime?: string;
 }
 
 export const INITIAL_WARD_PATIENTS: WardPatient[] = [

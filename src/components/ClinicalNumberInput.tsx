@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 
 interface ClinicalNumberInputProps {
   value: number;
@@ -22,7 +23,7 @@ interface ClinicalNumberInputProps {
  * - Automatically selects all text on focus so typing immediately replaces the old value
  * - Allows full deletion/backspace to empty string without snapping back prematurely
  * - Allows typing '0' or clearing completely without aggressive fallback loops
- * - Displays a quick-clear (✕) button when focused
+ * - Displays a quick-clear (X) button when focused
  * - Only validates and clamps on blur, while propagating live valid numbers as you type
  */
 export const ClinicalNumberInput: React.FC<ClinicalNumberInputProps> = ({
@@ -140,20 +141,20 @@ export const ClinicalNumberInput: React.FC<ClinicalNumberInputProps> = ({
         className={`${className} ${unit ? 'pr-9' : ''}`}
       />
 
-      {/* Clear (✕) button when focused and not empty */}
+      {/* Clear (X) button when focused and not empty */}
       {showClearButton && isFocused && text !== '' && (
-        <button
-          type="button"
-          onMouseDown={(e) => {
-            e.preventDefault(); // Prevents input blur before clear takes effect
-            handleClear();
-          }}
-          className="absolute right-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
-          title="Clear field to type new value"
-          aria-label="Clear value"
-        >
-          ✕
-        </button>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevents input blur before clear takes effect
+              handleClear();
+            }}
+            className="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+            title="Clear field to type new value"
+            aria-label="Clear value"
+          >
+            <X className="w-3 h-3" />
+          </button>
       )}
 
       {/* Unit label (e.g. kg, cm, mm, mo) */}
