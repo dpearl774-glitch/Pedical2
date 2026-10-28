@@ -519,7 +519,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-50 text-slate-900 flex flex-col font-sans antialiased pb-20 lg:pb-8">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden text-slate-900 flex flex-col font-sans antialiased pb-20 lg:pb-8">
       {/* Top Header with Interactive Patient Switcher & Notice */}
       <ClinicalHeader
         onPrint={() => {
@@ -554,8 +554,8 @@ export default function App() {
 
       {/* Main Content Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 overflow-x-hidden">
-        {/* Desktop View Navigation Pill Tabs (Clean segmented control with signature PediCal blue) */}
-        <div className="hidden lg:flex items-center justify-between bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs">
+        {/* Desktop View Navigation Dock: Tactile Sunken Dock with Floating Active Tab */}
+        <div className="hidden lg:flex items-center justify-between bg-slate-200/80 p-1.5 rounded-2xl border border-slate-300/70 shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur-xs">
           <div className="flex items-center gap-1 text-xs">
             {[
               { id: 'today', label: 'Today' },
@@ -572,10 +572,10 @@ export default function App() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                className={`py-1.5 px-3.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                   activeTab === tab.id
-                    ? 'bg-blue-700 text-white font-semibold shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-white text-blue-800 shadow-[0_2px_8px_-1px_rgba(15,23,42,0.14),0_1px_2px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/5'
+                    : 'text-slate-600 hover:text-slate-950 hover:bg-white/60'
                 }`}
               >
                 {tab.label}
@@ -592,9 +592,9 @@ export default function App() {
                 setPrintBatchMode(false);
                 setShowPrintModal(true);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 border border-slate-200 bg-white rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:pointer-events-none shadow-xs"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-slate-800 stepper-tactile rounded-xl hover:text-slate-950 transition-colors disabled:opacity-40 disabled:pointer-events-none"
             >
-              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <Printer className="w-3.5 h-3.5 text-slate-700" />
               <span>Print {activePatient ? activePatient.cotNumber : 'Bed'}</span>
             </button>
           </div>

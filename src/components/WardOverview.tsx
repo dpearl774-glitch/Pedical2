@@ -375,59 +375,59 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
               return (
                 <div
                   key={patient.id}
-                  className={`bg-white rounded-2xl border p-4 sm:p-5 transition-all relative flex flex-col justify-between ${
+                  className={`rounded-2xl p-4.5 sm:p-5 transition-all relative flex flex-col justify-between ${
                     isSelected
-                      ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md'
-                      : 'border-slate-200 hover:border-slate-300 shadow-xs'
+                      ? 'bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 border border-blue-400 ring-2 ring-blue-600/30 shadow-[0_4px_20px_-2px_rgba(37,99,235,0.16)]'
+                      : 'card-depth card-depth-hover bg-white'
                   }`}
                 >
                   {/* Card Header */}
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold">
+                        <span className="px-2.5 py-0.5 rounded-lg bg-slate-900 text-white text-xs font-black font-mono shadow-2xs">
                           {patient.cotNumber}
                         </span>
                         <div>
                           <h3 className="font-bold text-slate-900 text-sm leading-tight">
                             {patient.name}
                           </h3>
-                          <div className="text-xs text-slate-500 font-medium">
+                          <div className="text-xs text-slate-500 font-medium font-sans">
                             Ref: {patient.mrn} &middot; {patient.input.age_months ?? '--'} mo &middot; {patient.input.sex}
                           </div>
                         </div>
                       </div>
 
                       {isSelected && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
-                          Active
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-200 shadow-2xs">
+                          Active Bed
                         </span>
                       )}
                     </div>
 
                     {/* Error Banner if F-100 with severe edema */}
                     {isF100EdemaError && (
-                      <div className="mb-2 p-2 rounded-lg bg-red-50 border border-red-200 text-red-900 text-xs font-bold flex items-center gap-1.5">
+                      <div className="mb-2 p-2 rounded-lg bg-red-50 border border-red-200 text-red-900 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
                         <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
                         <span>Rule 2 Error: F-100 Contraindicated in Severe Edema</span>
                       </div>
                     )}
 
                     {/* Anthropometrics & Z-Score */}
-                    <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 mb-3 text-xs">
+                    <div className="grid grid-cols-3 gap-2 surface-sunken p-2.5 rounded-xl border border-slate-200/90 mb-3 text-xs">
                       <div>
                         <span className="text-[10px] text-slate-500 font-semibold block">Weight</span>
-                        <strong className="text-slate-900 text-sm">{patient.input.weight_kg} kg</strong>
+                        <strong className="text-slate-900 text-sm font-mono font-bold">{patient.input.weight_kg} kg</strong>
                       </div>
                       <div>
                         <span className="text-[10px] text-slate-500 font-semibold block">Length</span>
-                        <strong className="text-slate-900 text-sm">{patient.input.height_cm ?? '--'} cm</strong>
+                        <strong className="text-slate-900 text-sm font-mono font-bold">{patient.input.height_cm ?? '--'} cm</strong>
                       </div>
                       <div>
                         <span className="text-[10px] text-slate-500 font-semibold block">WHZ</span>
                         <strong
-                          className={`text-sm ${
-                            evalRes.growthAssessment?.isSam ? 'text-red-600 font-bold' : 'text-amber-600 font-bold'
+                          className={`text-sm font-mono font-bold ${
+                            evalRes.growthAssessment?.isSam ? 'text-red-600' : 'text-amber-600'
                           }`}
                         >
                           {evalRes.growthAssessment?.wflZScore !== undefined
@@ -439,31 +439,31 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
 
                     {/* Status Metadata */}
                     <div className="flex items-center gap-1.5 mb-3 text-xs text-slate-600 font-medium">
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-bold text-slate-900">
                         {patient.input.therapeutic_phase.split(' ')[0]}
                       </span>
                       <span aria-hidden="true" className="text-slate-300">&middot;</span>
-                      <span className={isHighEdema ? 'text-rose-700 font-semibold' : ''}>
+                      <span className={isHighEdema ? 'text-rose-700 font-bold' : ''}>
                         Edema: {patient.input.edema_severity}
                       </span>
                       <span aria-hidden="true" className="text-slate-300">&middot;</span>
-                      <span>q{patient.input.feeding_interval_hours}h</span>
+                      <span className="font-mono">q{patient.input.feeding_interval_hours}h</span>
                     </div>
 
                     {/* Feeding Target Strip */}
-                    <div className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs mb-3 flex items-center justify-between">
+                    <div className="p-2.5 rounded-xl border border-slate-200 bg-white text-xs mb-3 flex items-center justify-between shadow-2xs">
                       <div>
                         <span className="text-slate-500 text-[10px] font-semibold block">Feed target</span>
-                        <strong className="text-slate-900 text-base font-bold">
+                        <strong className="text-slate-900 text-base font-bold font-mono">
                           {evalRes.feedingSummary.targetVolumePerFeed} mL
                         </strong>
-                        <span className="text-slate-500 text-xs ml-1">
+                        <span className="text-slate-500 text-xs ml-1 font-mono">
                           q{evalRes.feedingSummary.feedingIntervalHours}h
                         </span>
                       </div>
                       <div className="text-right">
                         <span className="text-slate-500 text-[10px] font-semibold block">24h total</span>
-                        <strong className="text-slate-900 text-sm font-bold">
+                        <strong className="text-slate-900 text-sm font-bold font-mono">
                           {evalRes.feedingSummary.dailyVolume} mL
                         </strong>
                       </div>
@@ -475,10 +475,10 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                     <button
                       type="button"
                       onClick={() => onSelectPatient(patient.id)}
-                      className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors min-h-[36px] ${
+                      className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all min-h-[36px] ${
                         isSelected
-                          ? 'bg-blue-700 text-white'
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                          ? 'btn-tactile-primary text-white'
+                          : 'stepper-tactile text-slate-800'
                       }`}
                     >
                       <span>{isSelected ? 'Viewing' : 'Select'}</span>
@@ -488,7 +488,7 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                     <button
                       type="button"
                       onClick={() => handleOpenDischargeModal(patient)}
-                      className="py-1.5 px-3 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold text-xs flex items-center justify-center gap-1 min-h-[36px]"
+                      className="py-1.5 px-3 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold text-xs flex items-center justify-center gap-1 min-h-[36px] shadow-2xs transition-colors"
                       title="Discharge & Step-down to OTP"
                     >
                       <LogOut className="w-3.5 h-3.5 text-emerald-700" />
@@ -498,7 +498,7 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                     <button
                       type="button"
                       onClick={() => onPrintPatient(patient)}
-                      className="hidden sm:flex p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 min-h-[36px] min-w-[36px] items-center justify-center"
+                      className="hidden sm:flex p-1.5 rounded-xl stepper-tactile text-slate-700 hover:text-slate-950 min-h-[36px] min-w-[36px] items-center justify-center"
                       title="Print Bedside Sheet"
                     >
                       <Printer className="w-3.5 h-3.5" />
@@ -507,7 +507,7 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                     <button
                       type="button"
                       onClick={() => onDeletePatient(patient.id)}
-                      className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 min-h-[36px] min-w-[36px] flex items-center justify-center"
+                      className="p-1.5 rounded-xl border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 min-h-[36px] min-w-[36px] flex items-center justify-center transition-colors"
                       title="Delete Record"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

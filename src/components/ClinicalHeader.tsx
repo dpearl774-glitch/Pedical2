@@ -58,7 +58,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
   const isDueBadge = dueReminderCount > 0;
 
   return (
-    <header className="no-print bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-40 text-slate-900 transition-all">
+    <header className="no-print bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-[0_1px_8px_-2px_rgba(15,23,42,0.06)] sticky top-0 z-40 text-slate-900 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 px-3 sm:px-6 py-2">
         {/* Left: Brand Wordmark */}
         <div className="flex items-center gap-3 shrink-0">
@@ -68,7 +68,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             className="flex items-center gap-2 group text-left py-1 transition-all rounded-lg"
             title="PediCal Workspace"
           >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-700 text-white font-black text-sm flex items-center justify-center shadow-xs group-hover:bg-blue-800 transition-colors">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 text-white font-black text-sm flex items-center justify-center shadow-xs shadow-blue-700/30 group-hover:from-blue-700 group-hover:to-blue-900 transition-all">
               P
             </div>
             <div className="flex flex-col">
@@ -88,18 +88,18 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="w-full flex items-center justify-between gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 transition-all min-h-[36px] shadow-2xs group"
+              className="w-full flex items-center justify-between gap-1.5 px-3 py-1.5 rounded-xl stepper-tactile text-slate-800 transition-all min-h-[38px] group"
               title="Switch patient bed"
               aria-label="Active patient selector"
             >
               <div className="flex items-center gap-2 truncate">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ring-2 ring-emerald-100" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ring-2 ring-emerald-100 shadow-2xs" />
                 <div className="truncate text-left">
                   <div className="text-xs font-bold text-slate-900 truncate leading-tight">
                     {activePatient ? (
                       <>
-                        <span>{activePatient.cotNumber}</span>
-                        <span className="text-slate-500 font-normal ml-1.5 truncate">
+                        <span className="text-blue-800 font-bold">{activePatient.cotNumber}</span>
+                        <span className="text-slate-600 font-medium ml-1.5 truncate">
                           {activePatient.name.split(' ')[0]}
                         </span>
                       </>
@@ -109,7 +109,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
                   </div>
                 </div>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 shrink-0 transition-colors" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0 transition-colors" />
             </button>
 
             {dropdownOpen && (
@@ -183,7 +183,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onLockScreen}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors shrink-0 shadow-2xs"
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-amber-300/80 bg-gradient-to-b from-amber-50 to-amber-100/70 text-amber-800 hover:from-amber-100 hover:to-amber-200/70 transition-all shrink-0 shadow-xs"
               title="Lock screen"
               aria-label="Lock screen"
             >
@@ -196,14 +196,14 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenReminders}
-              className="relative w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors shrink-0 shadow-2xs"
+              className="relative w-9 h-9 flex items-center justify-center rounded-xl stepper-tactile text-slate-700 hover:text-slate-900 transition-all shrink-0"
               title="Reminders & Alarms"
               aria-label="Reminders"
             >
               <Bell className="w-4 h-4 text-slate-700" />
               {badgeCount > 0 && (
                 <span
-                  className={`absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full text-white font-extrabold text-[10px] flex items-center justify-center border-2 border-white shadow-2xs ${
+                  className={`absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full text-white font-extrabold text-[10px] flex items-center justify-center border-2 border-white shadow-xs ${
                     isDueBadge ? 'bg-rose-600 animate-pulse' : 'bg-blue-700'
                   }`}
                 >
@@ -216,7 +216,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenReference}
-            className="hidden md:flex px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 items-center gap-1.5 text-xs font-semibold transition-colors min-h-[36px] shadow-2xs"
+            className="hidden md:flex px-3 py-2 rounded-xl stepper-tactile text-slate-700 hover:text-slate-950 items-center gap-1.5 text-xs font-bold transition-all min-h-[36px]"
             title="Clinical Protocols"
           >
             <BookOpen className="w-3.5 h-3.5 text-slate-600" />
@@ -227,7 +227,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenDisclaimer}
-              className="hidden lg:flex px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 items-center gap-1.5 text-xs font-semibold transition-colors min-h-[36px] shadow-2xs"
+              className="hidden lg:flex px-3 py-2 rounded-xl stepper-tactile text-slate-700 hover:text-slate-950 items-center gap-1.5 text-xs font-bold transition-all min-h-[36px]"
               title="Clinical Disclaimer"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -238,7 +238,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
           <button
             type="button"
             onClick={onPrint}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 transition-colors rounded-xl shrink-0 min-h-[36px] shadow-2xs"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white btn-tactile-primary rounded-xl shrink-0 min-h-[36px]"
             title="Print Patient Worksheet"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -250,7 +250,7 @@ export const ClinicalHeader: React.FC<ClinicalHeaderProps> = ({
             <button
               type="button"
               onClick={onOpenSettings}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors shrink-0 shadow-2xs"
+              className="w-9 h-9 flex items-center justify-center rounded-xl stepper-tactile text-slate-700 hover:text-slate-950 transition-all shrink-0"
               title="Settings"
               aria-label="Settings"
             >

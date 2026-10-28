@@ -1148,14 +1148,14 @@ Report Generated: ${new Date().toLocaleString()}`;
           return (
             <div
               key={record.id}
-              className={`p-4 rounded-xl border transition-all text-xs flex flex-col justify-between space-y-3 ${
+              className={`p-4 rounded-xl transition-all text-xs flex flex-col justify-between space-y-3 ${
                 isVomited
-                  ? 'bg-red-50/90 border-red-300 shadow-xs'
+                  ? 'bg-gradient-to-br from-red-50/95 via-white to-red-50/40 border border-red-300 ring-1 ring-red-400/40 shadow-sm'
                   : isShortfall
-                  ? 'bg-amber-50/80 border-amber-300 shadow-xs'
+                  ? 'bg-gradient-to-br from-amber-50/95 via-white to-amber-50/40 border border-amber-300 ring-1 ring-amber-400/40 shadow-sm'
                   : isDone
-                  ? 'bg-emerald-50/70 border-emerald-200 shadow-xs'
-                  : 'bg-white border-slate-200 hover:border-slate-300'
+                  ? 'bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/30 border border-emerald-300 ring-1 ring-emerald-400/30 shadow-sm'
+                  : 'card-depth card-depth-hover bg-white'
               }`}
             >
               {/* Card Header: Slot & Status Badge */}

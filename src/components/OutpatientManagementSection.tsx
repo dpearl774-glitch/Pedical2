@@ -140,18 +140,18 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
+      <div className="card-depth rounded-3xl p-5 sm:p-6 bg-white">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shadow-2xs">
                 <HeartHandshake className="w-4 h-4" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 Outpatient Therapeutic Care (OTP)
               </h2>
             </div>
-            <p className="text-xs text-slate-500 mt-1 pl-10.5">
+            <p className="text-xs text-slate-500 mt-1 pl-10.5 font-medium">
               RUTF protocol dosing, WHO appetite test validation, and routine community medications.
             </p>
           </div>
@@ -161,7 +161,7 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               <button
                 type="button"
                 onClick={handleSyncFromInpatient}
-                className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors flex items-center gap-1.5 min-h-[36px]"
+                className="px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all flex items-center gap-1.5 min-h-[36px] shadow-2xs"
                 title="Sync clinical parameters from current inpatient bed"
               >
                 <User className="w-3.5 h-3.5" />
@@ -172,16 +172,16 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
             <button
               type="button"
               onClick={handleCopySummary}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors flex items-center gap-1.5 min-h-[36px]"
+              className="px-3 py-1.5 text-xs font-bold text-slate-700 stepper-tactile rounded-xl transition-all flex items-center gap-1.5 min-h-[36px]"
             >
-              {copiedSummary ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedSummary ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
               <span>{copiedSummary ? 'Copied' : 'Copy summary'}</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrintOtpSheet}
-              className="hidden sm:inline-flex px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors items-center gap-1.5 shadow-xs min-h-[36px]"
+              className="hidden sm:inline-flex px-3.5 py-1.5 text-xs font-bold text-white btn-tactile-primary rounded-xl items-center gap-1.5 min-h-[36px]"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print sheet</span>
@@ -192,12 +192,12 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
         {/* Triage Decision Banner */}
         <div className="mt-4">
           <div
-            className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+            className={`p-4.5 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm ${
               triage.isEligibleForOTP
-                ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+                ? 'bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/40 border-emerald-300 text-emerald-950'
                 : triage.triageCategory === 'Inpatient Referral Required'
-                ? 'bg-rose-50/80 border-rose-300 text-rose-950'
-                : 'bg-amber-50/80 border-amber-300 text-amber-950'
+                ? 'bg-gradient-to-br from-rose-50/90 via-white to-rose-50/40 border-rose-300 text-rose-950'
+                : 'bg-gradient-to-br from-amber-50/90 via-white to-amber-50/40 border-amber-300 text-amber-950'
             }`}
           >
             <div className="space-y-1">
@@ -213,7 +213,7 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
                   {triage.triageCategory}
                 </span>
                 {triage.referralUrgency && triage.referralUrgency !== 'None' && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 font-bold">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-200 border border-rose-300 text-rose-900 font-bold">
                     {triage.referralUrgency}
                   </span>
                 )}
@@ -232,7 +232,7 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               <button
                 type="button"
                 onClick={onNavigateToInpatientWard}
-                className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-semibold text-xs rounded-xl shadow-xs shrink-0 flex items-center justify-center gap-1.5 min-h-[42px]"
+                className="px-4 py-2 btn-tactile-primary bg-rose-700 text-white font-bold text-xs rounded-xl shrink-0 flex items-center justify-center gap-1.5 min-h-[42px]"
               >
                 <span>Transfer to inpatient</span>
                 <ChevronRight className="w-4 h-4" />
@@ -247,9 +247,9 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
         {/* LEFT COLUMN: Assessment & Appetite Test (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Form Controls */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
+          <div className="card-depth rounded-2xl p-5 space-y-4 bg-white">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
                 1. Clinical inputs
               </h3>
               <span className="text-[11px] font-mono text-slate-500">De-identified</span>

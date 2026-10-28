@@ -165,7 +165,7 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
       {/* SECTION 1: Prescribed Feeding & Macronutrient Targets */}
       <section
         id="feeding-target-section"
-        className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4"
+        className="card-depth rounded-2xl p-5 sm:p-6 space-y-4 bg-white"
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
           <div>
@@ -177,7 +177,7 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs px-3 py-1 rounded-xl bg-blue-50 text-blue-800 font-semibold border border-blue-100">
+            <span className="text-xs px-3 py-1 rounded-xl bg-blue-50 text-blue-800 font-bold border border-blue-200 shadow-2xs">
               {feedingSummary.feedsPerDay} feeds/day
             </span>
           </div>
@@ -186,14 +186,14 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
         {/* 3 Prominent Stat Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
           {/* Target Volume Per Feed */}
-          <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/50 flex flex-col justify-between min-h-[110px]">
+          <div className="p-4.5 rounded-xl border border-blue-300/80 bg-gradient-to-br from-blue-50/90 via-white to-blue-50/40 shadow-xs flex flex-col justify-between min-h-[110px]">
             <div>
               <div className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-1">
                 Per feed
               </div>
-              <div className="text-3xl sm:text-4xl font-bold text-slate-900 mt-1">
+              <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1 font-mono tabular-nums">
                 {feedingSummary.targetVolumePerFeed}
-                <span className="text-base font-medium text-blue-700 ml-1.5">mL</span>
+                <span className="text-base font-bold text-blue-700 ml-1.5">mL</span>
               </div>
             </div>
             <div className="text-xs text-slate-700 mt-2">
@@ -202,14 +202,14 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
           </div>
 
           {/* Total Fluid Volume per 24 hours */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between min-h-[110px]">
+          <div className="p-4.5 rounded-xl border border-slate-300/80 bg-gradient-to-br from-slate-50/90 via-white to-slate-50/40 shadow-xs flex flex-col justify-between min-h-[110px]">
             <div>
               <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                 24h volume
               </div>
-              <div className="text-3xl sm:text-4xl font-bold text-slate-900 mt-1">
+              <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1 font-mono tabular-nums">
                 {feedingSummary.dailyVolume}
-                <span className="text-base font-medium text-slate-500 ml-1.5">mL/day</span>
+                <span className="text-base font-bold text-slate-500 ml-1.5">mL/day</span>
               </div>
             </div>
             <div className="text-xs text-slate-700 mt-2">
@@ -218,14 +218,14 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
           </div>
 
           {/* Critical Minimum Daily Intake (80%) */}
-          <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/60 flex flex-col justify-between min-h-[110px]">
+          <div className="p-4.5 rounded-xl border border-amber-300/80 bg-gradient-to-br from-amber-50/90 via-white to-amber-50/40 shadow-xs flex flex-col justify-between min-h-[110px]">
             <div>
               <div className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1">
                 Minimum safe (80%)
               </div>
-              <div className="text-3xl sm:text-4xl font-bold text-amber-950 mt-1">
+              <div className="text-3xl sm:text-4xl font-extrabold text-amber-950 mt-1 font-mono tabular-nums">
                 {feedingSummary.safeMinimumVolume}
-                <span className="text-base font-medium text-amber-800 ml-1.5">mL/day</span>
+                <span className="text-base font-bold text-amber-800 ml-1.5">mL/day</span>
               </div>
             </div>
             <div className="text-xs text-amber-900 mt-2">
@@ -235,26 +235,26 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
         </div>
 
         {/* Dietitian Macronutrient Delivery Breakdown */}
-        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 text-xs">
+        <div className="p-4 rounded-xl surface-sunken space-y-2 text-xs">
           <div className="font-bold text-slate-900 uppercase tracking-wider">
             Dietitian Macronutrient Delivery
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-            <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <div className="p-2.5 rounded-lg card-depth">
               <span className="text-slate-500 text-[10px] font-semibold block">Daily Energy</span>
-              <strong className="text-slate-900 text-sm font-bold">{feedingSummary.dailyEnergyKcal} kcal/day</strong>
+              <strong className="text-slate-900 text-sm font-bold font-mono tabular-nums">{feedingSummary.dailyEnergyKcal} kcal/day</strong>
             </div>
-            <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <div className="p-2.5 rounded-lg card-depth">
               <span className="text-slate-500 text-[10px] font-semibold block">Energy Density</span>
-              <strong className="text-slate-900 text-sm font-bold">{feedingSummary.energyKcalPerKgDay} kcal/kg/day</strong>
+              <strong className="text-slate-900 text-sm font-bold font-mono tabular-nums">{feedingSummary.energyKcalPerKgDay} kcal/kg/day</strong>
             </div>
-            <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <div className="p-2.5 rounded-lg card-depth">
               <span className="text-slate-500 text-[10px] font-semibold block">Daily Protein</span>
-              <strong className="text-slate-900 text-sm font-bold">{feedingSummary.dailyProteinGrams} g/day</strong>
+              <strong className="text-slate-900 text-sm font-bold font-mono tabular-nums">{feedingSummary.dailyProteinGrams} g/day</strong>
             </div>
-            <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+            <div className="p-2.5 rounded-lg card-depth">
               <span className="text-slate-500 text-[10px] font-semibold block">Protein Delivery</span>
-              <strong className="text-slate-900 text-sm font-bold">{feedingSummary.proteinGramsPerKgDay} g/kg/day</strong>
+              <strong className="text-slate-900 text-sm font-bold font-mono tabular-nums">{feedingSummary.proteinGramsPerKgDay} g/kg/day</strong>
             </div>
           </div>
         </div>

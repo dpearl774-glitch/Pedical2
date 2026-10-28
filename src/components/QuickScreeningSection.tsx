@@ -491,7 +491,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* LEFT COLUMN: Step 1. Child Measurements Form (7 Cols) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl p-5 sm:p-6 shadow-xs space-y-5">
+        <div className="lg:col-span-7 card-depth rounded-2xl p-5 sm:p-6 space-y-5 bg-white">
           <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
             <div>
               <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">Step 1</span>
@@ -499,7 +499,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
             </div>
             <div className="text-right">
               <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Assigned Code</span>
-              <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+              <span className="text-xs font-mono font-bold text-blue-800 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md shadow-2xs">
                 {nextChildCode}
               </span>
             </div>
@@ -515,7 +515,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
               value={childName}
               onChange={(e) => setChildName(e.target.value)}
               placeholder="e.g. Aisha Bello or Household #14"
-              className="w-full h-11 px-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all shadow-xs"
+              className="w-full h-11 px-3.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]"
             />
           </div>
 
@@ -529,8 +529,8 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                   onClick={() => setSex('Boy')}
                   className={`rounded-xl font-bold transition-all text-center flex items-center justify-center min-h-[44px] ${
                     sex === 'Boy'
-                      ? 'bg-blue-700 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'btn-tactile-primary text-white font-bold'
+                      : 'stepper-tactile text-slate-700'
                   }`}
                 >
                   Boy
@@ -540,8 +540,8 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                   onClick={() => setSex('Girl')}
                   className={`rounded-xl font-bold transition-all text-center flex items-center justify-center min-h-[44px] ${
                     sex === 'Girl'
-                      ? 'bg-blue-700 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'btn-tactile-primary text-white font-bold'
+                      : 'stepper-tactile text-slate-700'
                   }`}
                 >
                   Girl
@@ -558,7 +558,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => adjustAge(-1)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Decrease age by 1 month"
                 >
                   <Minus className="w-4 h-4" />
@@ -571,13 +571,13 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     max={59}
                     isInteger={true}
                     unit="mo"
-                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-200 text-base font-bold text-slate-900 bg-white shadow-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-300 text-base font-bold text-slate-900 bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => adjustAge(1)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Increase age by 1 month"
                 >
                   <Plus className="w-4 h-4" />
@@ -588,7 +588,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
 
           {/* Special Guidance Note for Infants < 6 Months */}
           {ageMonths < 6 && (
-            <div className="p-3.5 rounded-xl bg-amber-50/80 text-xs text-amber-950 leading-relaxed font-sans shadow-xs">
+            <div className="p-3.5 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-950 leading-relaxed font-sans shadow-2xs">
               <strong>Infant &lt; 6 months (WHO 2023):</strong> Diagnosed primarily by Weight-for-Length and bilateral edema. MUAC cutoffs (&lt;115 mm) and RUTF appetite tests are not diagnostic for infants under 6 months.
             </div>
           )}
@@ -604,7 +604,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => adjustWeight(-0.1)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Decrease weight by 0.1 kg"
                 >
                   <Minus className="w-4 h-4" />
@@ -617,13 +617,13 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     max={30.0}
                     step={0.1}
                     unit="kg"
-                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-200 text-base font-bold text-slate-900 bg-white shadow-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-300 text-base font-bold text-slate-900 bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => adjustWeight(0.1)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Increase weight by 0.1 kg"
                 >
                   <Plus className="w-4 h-4" />
@@ -640,7 +640,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => adjustHeight(-0.5)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Decrease length by 0.5 cm"
                 >
                   <Minus className="w-4 h-4" />
@@ -653,13 +653,13 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     max={115.0}
                     step={0.5}
                     unit="cm"
-                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-200 text-base font-bold text-slate-900 bg-white shadow-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-300 text-base font-bold text-slate-900 bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => adjustHeight(0.5)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Increase length by 0.5 cm"
                 >
                   <Plus className="w-4 h-4" />
@@ -669,20 +669,20 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
           </div>
 
           {/* Head Circumference (OFC) Input */}
-          <div className="p-4 bg-slate-50/80 rounded-2xl shadow-xs space-y-3">
+          <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
                   Head Circumference / OFC (cm)
                 </label>
-                <span className="text-[11px] text-slate-500">Occipitofrontal Circumference (0–60 mo WHO Standard)</span>
+                <span className="text-[11px] text-slate-500 font-medium">Occipitofrontal Circumference (0–60 mo WHO Standard)</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustHeadCircumference(-0.5)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Decrease Head Circumference by 0.5 cm"
                 >
                   <Minus className="w-4 h-4" />
@@ -695,13 +695,13 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     max={58.0}
                     step={0.1}
                     unit="cm"
-                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-200 text-base font-bold text-slate-900 bg-white shadow-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-300 text-base font-bold text-slate-900 bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => adjustHeadCircumference(0.5)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Increase Head Circumference by 0.5 cm"
                 >
                   <Plus className="w-4 h-4" />
@@ -715,12 +715,12 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                 WHO Reference ({ageMonths} mo {sex}): <strong className="font-mono text-slate-900">{evaluation.hcfaTh.median} cm</strong> (Median)
               </span>
               <span
-                className={`font-semibold px-2.5 py-0.5 rounded-lg text-[11px] ${
+                className={`font-bold px-2.5 py-0.5 rounded-lg text-[11px] shadow-2xs ${
                   evaluation.headCircumferenceStatus === 'Microcephaly (< -2 SD)'
-                    ? 'bg-rose-100 text-rose-800'
+                    ? 'bg-rose-100 border border-rose-200 text-rose-800'
                     : evaluation.headCircumferenceStatus === 'Macrocephaly (> +2 SD)'
-                    ? 'bg-amber-100 text-amber-900'
-                    : 'bg-emerald-100 text-emerald-800'
+                    ? 'bg-amber-100 border border-amber-200 text-amber-900'
+                    : 'bg-emerald-100 border border-emerald-200 text-emerald-800'
                 }`}
               >
                 {evaluation.headCircumferenceStatus}
@@ -729,20 +729,20 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
           </div>
 
           {/* MUAC Input & Visual Tape Gauge */}
-          <div className="p-4 bg-slate-50/80 rounded-2xl shadow-xs space-y-3">
+          <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
                   MUAC Tape Measurement (mm)
                 </label>
-                <span className="text-[11px] text-slate-500">Mid-Upper Arm Circumference</span>
+                <span className="text-[11px] text-slate-500 font-medium">Mid-Upper Arm Circumference</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustMuac(-1)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Decrease MUAC by 1 mm"
                 >
                   <Minus className="w-4 h-4" />
@@ -755,13 +755,13 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     max={180}
                     isInteger={true}
                     unit="mm"
-                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-200 text-base font-bold text-slate-900 bg-white shadow-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                    className="w-full text-center h-11 min-h-[44px] rounded-xl border border-slate-300 text-base font-bold text-slate-900 bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => adjustMuac(1)}
-                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-700 transition-all font-bold shrink-0 shadow-xs"
+                  className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl stepper-tactile text-slate-800 font-bold shrink-0"
                   aria-label="Increase MUAC by 1 mm"
                 >
                   <Plus className="w-4 h-4" />
@@ -800,21 +800,21 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                   <button
                     type="button"
                     onClick={() => setMuacMm(110)}
-                    className="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 text-rose-700 text-[11px] font-bold shadow-xs transition-colors"
+                    className="px-2.5 py-1 rounded-lg stepper-tactile hover:bg-rose-50 text-rose-700 text-[11px] font-bold"
                   >
                     110 mm
                   </button>
                   <button
                     type="button"
                     onClick={() => setMuacMm(120)}
-                    className="px-2.5 py-1 rounded-lg bg-white hover:bg-amber-50 text-amber-800 text-[11px] font-bold shadow-xs transition-colors"
+                    className="px-2.5 py-1 rounded-lg stepper-tactile hover:bg-amber-50 text-amber-800 text-[11px] font-bold"
                   >
                     120 mm
                   </button>
                   <button
                     type="button"
                     onClick={() => setMuacMm(130)}
-                    className="px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-50 text-emerald-800 text-[11px] font-bold shadow-xs transition-colors"
+                    className="px-2.5 py-1 rounded-lg stepper-tactile hover:bg-emerald-50 text-emerald-800 text-[11px] font-bold"
                   >
                     130 mm
                   </button>
@@ -839,14 +839,14 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                 ] as const
               ).map((g) => {
                 const isSelected = edema === g;
-                let activeStyle = 'bg-slate-100 text-slate-700 hover:bg-slate-200';
+                let activeStyle = 'stepper-tactile text-slate-700 hover:text-slate-900';
                 if (isSelected) {
                   if (g === 'Grade +++ (Severe)') {
-                    activeStyle = 'bg-rose-700 text-white font-bold shadow-xs';
+                    activeStyle = 'bg-rose-700 border border-rose-800 text-white font-bold shadow-xs';
                   } else if (g === 'Grade ++ (Moderate)' || g === 'Grade + (Mild)') {
-                    activeStyle = 'bg-amber-600 text-white font-bold shadow-xs';
+                    activeStyle = 'bg-amber-600 border border-amber-700 text-white font-bold shadow-xs';
                   } else {
-                    activeStyle = 'bg-emerald-700 text-white font-bold shadow-xs';
+                    activeStyle = 'bg-emerald-700 border border-emerald-800 text-white font-bold shadow-xs';
                   }
                 }
 
@@ -855,7 +855,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     key={g}
                     type="button"
                     onClick={() => setEdema(g)}
-                    className={`p-2.5 rounded-xl text-center font-semibold transition-all min-h-[44px] flex items-center justify-center shadow-xs ${activeStyle}`}
+                    className={`p-2.5 rounded-xl text-center font-bold transition-all min-h-[44px] flex items-center justify-center ${activeStyle}`}
                   >
                     {g}
                   </button>
@@ -869,7 +869,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
             <button
               type="button"
               onClick={handleLogChild}
-              className="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 min-h-[46px]"
+              className="w-full py-3.5 px-4 btn-tactile-primary text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 min-h-[46px]"
             >
               <span>Save Child to Session Register ({nextChildCode})</span>
             </button>
@@ -878,13 +878,13 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
 
         {/* RIGHT COLUMN: Step 2. Triage Result & The SAM / MAM / Normal Cards (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="card-depth rounded-2xl p-5 sm:p-6 space-y-4 bg-white">
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
               <div>
                 <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">Step 2</span>
                 <h3 className="text-base font-bold text-slate-900">WHO Triage Classification</h3>
               </div>
-              <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg shadow-2xs">
                 WHZ: {evaluation.wflZScore > 0 ? `+${evaluation.wflZScore}` : evaluation.wflZScore} SD
               </span>
             </div>
@@ -894,10 +894,10 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
               
               {/* CARD 1: SAM */}
               <div
-                className={`rounded-2xl p-4 transition-all ${
+                className={`rounded-2xl p-4.5 transition-all ${
                   evaluation.classification === 'SAM'
-                    ? 'bg-rose-50/90 shadow-md ring-2 ring-rose-500/50'
-                    : 'bg-slate-50/70 opacity-60 hover:opacity-100 shadow-xs'
+                    ? 'bg-gradient-to-br from-rose-50/95 via-white to-rose-50/50 border border-rose-300 ring-2 ring-rose-500 shadow-[0_4px_20px_-2px_rgba(225,29,72,0.18)]'
+                    : 'card-depth opacity-75 hover:opacity-100 border-slate-200 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -914,7 +914,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     <span className="text-xs font-bold text-slate-900">Severe Acute Malnutrition</span>
                   </div>
                   {evaluation.classification === 'SAM' && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-rose-200 text-rose-900">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-rose-200 border border-rose-300 text-rose-900 shadow-2xs">
                       Active Match
                     </span>
                   )}
@@ -953,7 +953,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                                   : 'Mild/Moderate (+ / ++)',
                             })
                           }
-                          className="w-full py-2.5 px-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-between min-h-[42px]"
+                          className="w-full py-2.5 px-3.5 btn-tactile-primary text-white font-bold text-xs rounded-xl flex items-center justify-between min-h-[42px]"
                         >
                           <span>Admit Child to Inpatient Ward</span>
                           <ArrowRight className="w-4 h-4" />
@@ -975,7 +975,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                               name: childName.trim() ? childName.trim() : `Child ${nextChildCode}`,
                             })
                           }
-                          className="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-between min-h-[42px]"
+                          className="w-full py-2.5 px-3.5 bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 border border-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-between min-h-[42px]"
                         >
                           <span>Open in Outpatient OTP</span>
                           <ArrowRight className="w-4 h-4" />
@@ -988,10 +988,10 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
 
               {/* CARD 2: MAM */}
               <div
-                className={`rounded-2xl p-4 transition-all ${
+                className={`rounded-2xl p-4.5 transition-all ${
                   evaluation.classification === 'MAM'
-                    ? 'bg-amber-50/90 shadow-md ring-2 ring-amber-500/50'
-                    : 'bg-slate-50/70 opacity-60 hover:opacity-100 shadow-xs'
+                    ? 'bg-gradient-to-br from-amber-50/95 via-white to-amber-50/50 border border-amber-300 ring-2 ring-amber-500 shadow-[0_4px_20px_-2px_rgba(217,119,6,0.18)]'
+                    : 'card-depth opacity-75 hover:opacity-100 border-slate-200 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -1008,7 +1008,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     <span className="text-xs font-bold text-slate-900">Moderate Acute Malnutrition</span>
                   </div>
                   {evaluation.classification === 'MAM' && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-amber-200 text-amber-900">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-amber-200 border border-amber-300 text-amber-900 shadow-2xs">
                       Active Match
                     </span>
                   )}
@@ -1040,7 +1040,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                             name: childName.trim() ? childName.trim() : `Child ${nextChildCode}`,
                           })
                         }
-                        className="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-between min-h-[42px]"
+                        className="w-full py-2.5 px-3.5 bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 border border-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-between min-h-[42px]"
                       >
                         <span>Open in Supplementary / OTP Clinic</span>
                         <ArrowRight className="w-4 h-4" />
@@ -1052,10 +1052,10 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
 
               {/* CARD 3: NORMAL */}
               <div
-                className={`rounded-2xl p-4 transition-all ${
+                className={`rounded-2xl p-4.5 transition-all ${
                   evaluation.classification === 'Normal'
-                    ? 'bg-emerald-50/90 shadow-md ring-2 ring-emerald-500/50'
-                    : 'bg-slate-50/70 opacity-60 hover:opacity-100 shadow-xs'
+                    ? 'bg-gradient-to-br from-emerald-50/95 via-white to-emerald-50/50 border border-emerald-300 ring-2 ring-emerald-500 shadow-[0_4px_20px_-2px_rgba(16,185,129,0.18)]'
+                    : 'card-depth opacity-75 hover:opacity-100 border-slate-200 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -1072,7 +1072,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                     <span className="text-xs font-bold text-slate-900">Adequate Growth</span>
                   </div>
                   {evaluation.classification === 'Normal' && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-emerald-200 text-emerald-900">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-emerald-200 border border-emerald-300 text-emerald-900 shadow-2xs">
                       Active Match
                     </span>
                   )}
@@ -1106,7 +1106,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
       </div>
 
       {/* Step 3: Session Register & Cohort Tally */}
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="card-depth rounded-2xl p-5 sm:p-6 space-y-4 bg-white">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider block">Step 3</span>
@@ -1117,7 +1117,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
             <button
               type="button"
               onClick={() => setShowAnalysisModal(true)}
-              className="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 min-h-[36px]"
+              className="px-3.5 py-1.5 btn-tactile-primary text-white font-bold text-xs rounded-xl flex items-center gap-1.5 min-h-[36px]"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Analysis Report &amp; PDF</span>
@@ -1126,7 +1126,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
               type="button"
               onClick={handleExportCSV}
               disabled={screeningLog.length === 0}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 min-h-[36px] disabled:opacity-40"
+              className="px-3 py-1.5 stepper-tactile text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1.5 min-h-[36px] disabled:opacity-40"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span>Export CSV</span>
@@ -1135,7 +1135,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
               type="button"
               onClick={handleCopyTally}
               disabled={screeningLog.length === 0}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 min-h-[36px] disabled:opacity-40"
+              className="px-3 py-1.5 stepper-tactile text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1.5 min-h-[36px] disabled:opacity-40"
             >
               {copiedTally ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
               <span>{copiedTally ? 'Copied' : 'Copy'}</span>
@@ -1144,7 +1144,7 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
               <button
                 type="button"
                 onClick={handleClearLog}
-                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 min-h-[36px]"
+                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 min-h-[36px]"
               >
                 <Trash2 className="w-3.5 h-3.5 text-rose-600" />
                 <span>Clear</span>
@@ -1159,14 +1159,14 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
           <button
             type="button"
             onClick={() => setActiveFilter('ALL')}
-            className={`p-3.5 rounded-xl text-left transition-all shadow-xs ${
+            className={`p-3.5 rounded-xl text-left transition-all ${
               activeFilter === 'ALL'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
+                ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-900'
+                : 'card-depth card-depth-hover text-slate-700 bg-white'
             }`}
           >
             <div className="text-[11px] font-bold uppercase tracking-wider opacity-80">Total Cohort</div>
-            <div className="text-2xl font-bold font-mono mt-1">{stats.total}</div>
+            <div className="text-2xl font-black font-mono mt-1 tabular-nums">{stats.total}</div>
             <div className="text-xs font-semibold mt-0.5 opacity-80">GAM: {stats.gamPct}%</div>
           </button>
 
@@ -1174,14 +1174,14 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
           <button
             type="button"
             onClick={() => setActiveFilter('SAM')}
-            className={`p-3.5 rounded-xl text-left transition-all shadow-xs ${
+            className={`p-3.5 rounded-xl text-left transition-all ${
               activeFilter === 'SAM'
-                ? 'bg-rose-700 text-white'
-                : 'bg-rose-50/80 hover:bg-rose-100/80 text-rose-950'
+                ? 'bg-rose-700 text-white shadow-md ring-2 ring-rose-700'
+                : 'card-depth card-depth-hover text-rose-950 bg-gradient-to-br from-rose-50/70 via-white to-rose-50/30 border-rose-200/80'
             }`}
           >
             <div className="text-[11px] font-bold uppercase tracking-wider opacity-85">SAM</div>
-            <div className="text-2xl font-bold font-mono mt-1">{stats.sam}</div>
+            <div className="text-2xl font-black font-mono mt-1 tabular-nums">{stats.sam}</div>
             <div className="text-xs font-semibold mt-0.5 opacity-85">{stats.samPct}% of cohort</div>
           </button>
 
@@ -1189,14 +1189,14 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
           <button
             type="button"
             onClick={() => setActiveFilter('MAM')}
-            className={`p-3.5 rounded-xl text-left transition-all shadow-xs ${
+            className={`p-3.5 rounded-xl text-left transition-all ${
               activeFilter === 'MAM'
-                ? 'bg-amber-600 text-white'
-                : 'bg-amber-50/80 hover:bg-amber-100/80 text-amber-950'
+                ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-600'
+                : 'card-depth card-depth-hover text-amber-950 bg-gradient-to-br from-amber-50/70 via-white to-amber-50/30 border-amber-200/80'
             }`}
           >
             <div className="text-[11px] font-bold uppercase tracking-wider opacity-85">MAM</div>
-            <div className="text-2xl font-bold font-mono mt-1">{stats.mam}</div>
+            <div className="text-2xl font-black font-mono mt-1 tabular-nums">{stats.mam}</div>
             <div className="text-xs font-semibold mt-0.5 opacity-85">{stats.mamPct}% of cohort</div>
           </button>
 
@@ -1204,14 +1204,14 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
           <button
             type="button"
             onClick={() => setActiveFilter('Normal')}
-            className={`p-3.5 rounded-xl text-left transition-all shadow-xs ${
+            className={`p-3.5 rounded-xl text-left transition-all ${
               activeFilter === 'Normal'
-                ? 'bg-emerald-700 text-white'
-                : 'bg-emerald-50/80 hover:bg-emerald-100/80 text-emerald-950'
+                ? 'bg-emerald-700 text-white shadow-md ring-2 ring-emerald-700'
+                : 'card-depth card-depth-hover text-emerald-950 bg-gradient-to-br from-emerald-50/70 via-white to-emerald-50/30 border-emerald-200/80'
             }`}
           >
             <div className="text-[11px] font-bold uppercase tracking-wider opacity-85">Normal</div>
-            <div className="text-2xl font-bold font-mono mt-1">{stats.normal}</div>
+            <div className="text-2xl font-black font-mono mt-1 tabular-nums">{stats.normal}</div>
             <div className="text-xs font-semibold mt-0.5 opacity-85">{stats.normalPct}% of cohort</div>
           </button>
         </div>

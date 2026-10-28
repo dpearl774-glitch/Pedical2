@@ -244,22 +244,23 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* 1. TOP HERO: Professional Clinical Header with Original PediCal Blue */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* 1. TOP HERO: Professional Clinical Header with Atmospheric Depth */}
+      <div className="card-depth rounded-3xl p-6 sm:p-8 relative overflow-hidden bg-gradient-to-br from-white via-white to-blue-50/50">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className={`w-8 h-8 rounded-xl flex items-center justify-center ${greetingData.color}`}>
+              <span className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-2xs ${greetingData.color}`}>
                 <GreetingIcon className="w-4 h-4" />
               </span>
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                {greetingData.dateFormatted} &middot; <span className="text-blue-700 font-bold">{facilityName}</span>
+                {greetingData.dateFormatted} &middot; <span className="text-blue-800 font-bold">{facilityName}</span>
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
               {greetingData.text}, {getClinicianFirstName(clinicianName)}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-2xl font-sans leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl font-sans leading-relaxed">
               Inpatient pediatric nutrition census, therapeutic milk feeds, and growth monitoring schedule.
             </p>
           </div>
@@ -268,7 +269,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             <button
               type="button"
               onClick={onAdmitNewChild}
-              className="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 min-h-[40px]"
+              className="px-4 py-2.5 btn-tactile-primary text-white font-bold text-xs rounded-xl flex items-center gap-1.5 min-h-[40px]"
             >
               <Plus className="w-4 h-4" />
               <span>Admit Child</span>
@@ -276,7 +277,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('screener')}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 min-h-[40px]"
+              className="px-4 py-2.5 stepper-tactile text-slate-800 font-bold text-xs rounded-xl flex items-center gap-1.5 min-h-[40px]"
             >
               <Activity className="w-4 h-4 text-blue-700" />
               <span>Field Screener</span>
@@ -285,7 +286,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
         </div>
       </div>
 
-      {/* 2. WARD BREAKDOWN: Metric Cards (Clean minimal tiles with signature PediCal blue accents) */}
+      {/* 2. WARD BREAKDOWN: Tactile Metric Cards with Subtle Colored Surface Tints */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
@@ -300,21 +301,21 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 1: Total Census */}
           <div
             onClick={() => onNavigate('ward')}
-            className="bg-white rounded-2xl p-4 sm:p-5 hover:bg-blue-50/20 transition-all cursor-pointer group shadow-xs"
+            className="card-depth card-depth-hover rounded-2xl p-4 sm:p-5 cursor-pointer group bg-gradient-to-br from-white via-white to-blue-50/50"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-blue-100/70 text-blue-800 flex items-center justify-center shrink-0 shadow-2xs">
                 <Bed className="w-3.5 h-3.5" />
               </span>
-              <span className="text-xs text-slate-600 font-semibold">
+              <span className="text-xs text-slate-700 font-bold">
                 Ward Census
               </span>
             </div>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono tabular-nums">
                 {String(summary.totalPatients).padStart(2, '0')}
               </span>
-              <span className="text-xs text-slate-400 font-normal">
+              <span className="text-xs text-slate-500 font-medium">
                 Beds
               </span>
             </div>
@@ -323,21 +324,21 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 2: F-75 Stabilization */}
           <div
             onClick={() => onNavigate('calculator')}
-            className="bg-white rounded-2xl p-4 sm:p-5 hover:bg-blue-50/20 transition-all cursor-pointer group shadow-xs"
+            className="card-depth card-depth-hover rounded-2xl p-4 sm:p-5 cursor-pointer group bg-gradient-to-br from-white via-white to-amber-50/50"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 shadow-2xs">
                 <Droplets className="w-3.5 h-3.5" />
               </span>
-              <span className="text-xs text-blue-900 font-semibold">
+              <span className="text-xs text-amber-950 font-bold">
                 F-75 Stabilization
               </span>
             </div>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl sm:text-3xl font-bold text-blue-950 tracking-tight">
+              <span className="text-2xl sm:text-3xl font-extrabold text-amber-950 tracking-tight font-mono tabular-nums">
                 {String(summary.f75Count).padStart(2, '0')}
               </span>
-              <span className="text-xs text-blue-600 font-normal">
+              <span className="text-xs text-amber-700 font-medium">
                 Children
               </span>
             </div>
@@ -346,21 +347,21 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 3: F-100 Rehabilitation */}
           <div
             onClick={() => onNavigate('recipe')}
-            className="bg-white rounded-2xl p-4 sm:p-5 hover:bg-emerald-50/20 transition-all cursor-pointer group shadow-xs"
+            className="card-depth card-depth-hover rounded-2xl p-4 sm:p-5 cursor-pointer group bg-gradient-to-br from-white via-white to-emerald-50/50"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 shadow-2xs">
                 <Scale className="w-3.5 h-3.5" />
               </span>
-              <span className="text-xs text-emerald-900 font-semibold">
+              <span className="text-xs text-emerald-950 font-bold">
                 F-100 Rehabilitation
               </span>
             </div>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl sm:text-3xl font-bold text-emerald-950 tracking-tight">
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-950 tracking-tight font-mono tabular-nums">
                 {String(summary.f100Count).padStart(2, '0')}
               </span>
-              <span className="text-xs text-emerald-600 font-normal">
+              <span className="text-xs text-emerald-700 font-medium">
                 Advancing
               </span>
             </div>
@@ -369,33 +370,35 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 4: Reminders Due */}
           <div
             onClick={onOpenReminders}
-            className={`rounded-2xl p-4 sm:p-5 transition-all cursor-pointer group shadow-xs ${
+            className={`card-depth card-depth-hover rounded-2xl p-4 sm:p-5 cursor-pointer group ${
               summary.overdueRemindersCount > 0
-                ? 'bg-rose-50/70 hover:bg-rose-100/70'
-                : 'bg-white hover:bg-slate-50'
+                ? 'bg-gradient-to-br from-rose-50/90 via-white to-rose-50/40 ring-1 ring-rose-300'
+                : 'bg-gradient-to-br from-white via-white to-slate-50'
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+              <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-2xs ${
                 summary.overdueRemindersCount > 0
-                  ? 'bg-rose-100 text-rose-700'
+                  ? 'bg-rose-100 text-rose-800'
                   : 'bg-slate-100 text-slate-700'
               }`}>
                 <Clock className="w-3.5 h-3.5" />
               </span>
-              <span className={`text-xs font-semibold ${
-                summary.overdueRemindersCount > 0 ? 'text-rose-800' : 'text-slate-600'
+              <span className={`text-xs font-bold ${
+                summary.overdueRemindersCount > 0 ? 'text-rose-900' : 'text-slate-700'
               }`}>
                 Reminders Due
               </span>
             </div>
             <div className="flex items-baseline gap-1 mt-1">
-              <span className={`text-2xl sm:text-3xl font-bold tracking-tight ${
+              <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight font-mono tabular-nums ${
                 summary.overdueRemindersCount > 0 ? 'text-rose-950' : 'text-slate-900'
               }`}>
                 {String(summary.dueRemindersCount).padStart(2, '0')}
               </span>
-              <span className="text-xs text-slate-500 font-normal">
+              <span className={`text-xs font-medium ${
+                summary.overdueRemindersCount > 0 ? 'text-rose-700 font-bold' : 'text-slate-500'
+              }`}>
                 {summary.overdueRemindersCount > 0 ? 'Overdue' : 'Active'}
               </span>
             </div>
@@ -438,9 +441,9 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
         </div>
       </div>
 
-      {/* 4. CLINICAL TIP OF THE DAY: Clean White Card with PediCal Blue Timer Line */}
+      {/* 4. CLINICAL TIP OF THE DAY: Tactile Card with PediCal Blue Timer Line */}
       <div
-        className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-xs relative overflow-hidden"
+        className="card-depth rounded-3xl p-6 sm:p-7 relative overflow-hidden bg-white"
         onMouseEnter={() => setIsTipPaused(true)}
         onMouseLeave={() => setIsTipPaused(false)}
       >
@@ -454,10 +457,10 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+            <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200 shadow-2xs">
               {activeTip.category}
             </span>
-            <span className="text-[11px] text-slate-400 font-sans">
+            <span className="text-[11px] text-slate-500 font-sans font-medium">
               Tip {activeTip.id} of {CLINICAL_TIPS.length}
             </span>
           </div>
@@ -466,7 +469,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             <button
               type="button"
               onClick={handleShuffleTip}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
+              className="p-1.5 rounded-lg stepper-tactile text-slate-600 hover:text-slate-900 transition-all"
               title="Shuffle tip"
             >
               <Shuffle className="w-3.5 h-3.5" />
@@ -474,7 +477,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             <button
               type="button"
               onClick={handleNextTip}
-              className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors flex items-center gap-1"
+              className="px-3 py-1 rounded-lg stepper-tactile text-slate-800 font-bold text-xs transition-all flex items-center gap-1"
             >
               <span>Next</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -491,8 +494,8 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           </p>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 font-sans">
-          <span>Standard: {activeTip.source}</span>
+        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 font-sans font-medium">
+          <span>Standard: <strong className="text-slate-700">{activeTip.source}</strong></span>
           <span>{isTipPaused ? 'Paused on hover' : 'Advances every 18 seconds'}</span>
         </div>
       </div>
@@ -514,17 +517,17 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             {/* Task Card 1: Feeds due */}
             <div
               onClick={() => onNavigate('schedule')}
-              className="bg-white rounded-2xl border border-slate-200 p-4 hover:border-blue-300 hover:bg-blue-50/20 transition-all cursor-pointer group flex items-start justify-between gap-3 shadow-xs"
+              className="card-depth card-depth-hover rounded-2xl p-4 cursor-pointer group flex items-start justify-between gap-3 bg-white"
             >
               <div className="flex items-start gap-3">
-                <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                   <Droplets className="w-4 h-4" />
                 </span>
                 <div className="space-y-0.5">
-                  <h4 className="text-xs sm:text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
                     Administer &amp; Reconcile Feeds
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                  <p className="text-xs text-slate-600 leading-relaxed font-sans">
                     Check bedside feeding log for {activePatient ? `${activePatient.cotNumber} (${activePatient.name})` : 'all inpatients'}. Verify intake and remaining volume.
                   </p>
                 </div>
@@ -538,22 +541,22 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
                 onClick={() => {
                   onNavigate('calculator', summary.severeEdemaPatients[0].id);
                 }}
-                className="bg-amber-50/70 rounded-2xl border border-amber-200 p-4 hover:border-amber-300 transition-all cursor-pointer group flex items-start justify-between gap-3 shadow-xs"
+                className="card-depth card-depth-hover rounded-2xl p-4 cursor-pointer group flex items-start justify-between gap-3 bg-gradient-to-br from-amber-50/90 via-white to-amber-50/40 border-amber-200"
               >
                 <div className="flex items-start gap-3">
-                  <span className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                     <AlertTriangle className="w-4 h-4" />
                   </span>
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-1.5">
-                      <h4 className="text-xs sm:text-sm font-semibold text-amber-950">
+                      <h4 className="text-xs sm:text-sm font-bold text-amber-950">
                         Bilateral Oedema Monitoring ({summary.severeEdemaPatients.length})
                       </h4>
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900">
                         Priority
                       </span>
                     </div>
-                    <p className="text-xs text-amber-900/80 leading-relaxed font-sans">
+                    <p className="text-xs text-amber-900/90 leading-relaxed font-sans">
                       {summary.severeEdemaPatients.map((p) => `${p.cotNumber} (${p.input.edema_severity})`).join(', ')}. Strict F-75 fluid restriction (100 mL/kg/day).
                     </p>
                   </div>
@@ -565,17 +568,17 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             {/* Task Card 3: Batch Milk Preparation */}
             <div
               onClick={() => onNavigate('recipe')}
-              className="bg-white rounded-2xl border border-slate-200 p-4 hover:border-blue-300 hover:bg-blue-50/20 transition-all cursor-pointer group flex items-start justify-between gap-3 shadow-xs"
+              className="card-depth card-depth-hover rounded-2xl p-4 cursor-pointer group flex items-start justify-between gap-3 bg-white"
             >
               <div className="flex items-start gap-3">
-                <span className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                   <Beaker className="w-4 h-4" />
                 </span>
                 <div className="space-y-0.5">
-                  <h4 className="text-xs sm:text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
                     24-Hour Therapeutic Milk Batch Recipe
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                  <p className="text-xs text-slate-600 leading-relaxed font-sans">
                     Prepare kitchen recipes for skimmed milk powder, white sugar, refined vegetable oil, and CMV mineral mix for prescribed daily totals.
                   </p>
                 </div>
@@ -586,17 +589,17 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             {/* Task Card 4: Daily Weight & Charting */}
             <div
               onClick={() => onNavigate('chart')}
-              className="bg-white rounded-2xl border border-slate-200 p-4 hover:border-blue-300 hover:bg-blue-50/20 transition-all cursor-pointer group flex items-start justify-between gap-3 shadow-xs"
+              className="card-depth card-depth-hover rounded-2xl p-4 cursor-pointer group flex items-start justify-between gap-3 bg-white"
             >
               <div className="flex items-start gap-3">
-                <span className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                   <Scale className="w-4 h-4" />
                 </span>
                 <div className="space-y-0.5">
-                  <h4 className="text-xs sm:text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
                     Daily Weight &amp; WHO Growth Standards
                   </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                  <p className="text-xs text-slate-600 leading-relaxed font-sans">
                     Record morning fasting weights and plot Length/Height-for-Age and Weight-for-Length z-scores to assess recovery velocity.
                   </p>
                 </div>
@@ -617,12 +620,12 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             </span>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+          <div className="card-depth rounded-2xl p-5 space-y-3 bg-white">
             {/* View Roster Primary Action */}
             <button
               type="button"
               onClick={() => onNavigate('ward')}
-              className="w-full py-3 px-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-between min-h-[44px]"
+              className="w-full py-3 px-4 btn-tactile-primary text-white font-bold text-xs rounded-xl flex items-center justify-between min-h-[44px]"
             >
               <div className="flex items-center gap-2">
                 <Bed className="w-4 h-4" />
@@ -635,7 +638,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('screener')}
-              className="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-800 font-semibold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-between min-h-[40px]"
+              className="w-full py-2.5 px-4 stepper-tactile text-slate-800 font-bold text-xs rounded-xl flex items-center justify-between min-h-[40px]"
             >
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-700" />
@@ -648,7 +651,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('resomal')}
-              className="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-800 font-semibold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-between min-h-[40px]"
+              className="w-full py-2.5 px-4 stepper-tactile text-slate-800 font-bold text-xs rounded-xl flex items-center justify-between min-h-[40px]"
             >
               <div className="flex items-center gap-2">
                 <Droplets className="w-4 h-4 text-teal-700" />

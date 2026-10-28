@@ -4,7 +4,7 @@
   html, body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     color: #0f172a;
-    background-color: #f8fafc;
+    background-color: #f1f5f9;
     overflow-x: hidden;
     width: 100%;
     max-width: 100%;
@@ -22,7 +22,8 @@
     max-width: 100%;
     position: relative;
     min-height: 100vh;
-    background-color: #f8fafc;
+    background-color: #f1f5f9;
+    background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.035) 0%, rgba(241, 245, 249, 0) 65%);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -38,6 +39,66 @@
 .font-mono {
   font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
+}
+
+/* Tactile Depth & Elevation System */
+.card-depth {
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 6px 18px -4px rgba(15, 23, 42, 0.05);
+}
+
+.card-depth-hover {
+  transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.card-depth-hover:hover {
+  box-shadow: 0 4px 8px -1px rgba(15, 23, 42, 0.05), 0 12px 24px -4px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+.surface-sunken {
+  background-color: #f8fafc;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: inset 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+}
+
+.stepper-tactile {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.12s ease;
+}
+
+.stepper-tactile:hover {
+  background: #ffffff;
+  border-color: #94a3b8;
+  box-shadow: 0 2px 4px 0 rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.stepper-tactile:active {
+  transform: translateY(1px);
+  background: #f1f5f9;
+  box-shadow: inset 0 1px 2px 0 rgba(15, 23, 42, 0.1);
+}
+
+.btn-tactile-primary {
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+  border: 1px solid #1e40af;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(29, 78, 216, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 0.15s ease;
+}
+
+.btn-tactile-primary:hover {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 6px 16px -2px rgba(29, 78, 216, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transform: translateY(-0.5px);
+}
+
+.btn-tactile-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1), inset 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 @media print {

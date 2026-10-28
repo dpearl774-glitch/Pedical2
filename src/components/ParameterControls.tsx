@@ -82,7 +82,7 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
   const isFullAssessment = input.calculation_mode === 'Full WHO Assessment + Calculator';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-5">
+    <div className="card-depth rounded-2xl p-4 sm:p-5 space-y-5 bg-white">
       {/* Header bar: Title & Reset Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
@@ -97,9 +97,9 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 transition-colors py-2 px-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 min-h-[44px] self-start sm:self-auto"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 hover:text-slate-950 transition-all py-2 px-3.5 rounded-xl stepper-tactile min-h-[44px] self-start sm:self-auto"
         >
-          <RefreshCw className="w-4 h-4 text-slate-500" />
+          <RefreshCw className="w-4 h-4 text-slate-600" />
           <span>Reset</span>
         </button>
       </div>
