@@ -178,7 +178,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900">Application Settings &amp; Customization</h2>
-              <p className="text-[11px] text-slate-500">Declutter interface &middot; Bedside PIN &middot; Local Backup</p>
+              <p className="text-[11px] text-slate-500">Declutter interface &middot; PIN lock &middot; Local Backup</p>
             </div>
           </div>
 
@@ -200,7 +200,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             { id: 'interface', label: 'UI & Declutter', icon: Eye },
             { id: 'facility', label: 'Facility Branding', icon: Building2 },
             { id: 'clinical', label: 'Clinical Protocols', icon: Activity },
-            { id: 'security', label: 'Bedside Security', icon: Lock },
+            { id: 'security', label: 'Security', icon: Lock },
             { id: 'data', label: 'Data & Backup', icon: Layers },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -342,6 +342,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               <div className="space-y-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    Your Name / Clinician Name
+                  </label>
+                  <input
+                    type="text"
+                    value={form.clinicianName || ''}
+                    onChange={(e) => handleUpdate('clinicianName', e.target.value)}
+                    placeholder="e.g. Ama Mensah or Dr. Kofi"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium text-xs focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Your first name will replace the default &quot;Clinician&quot; greeting on your Today dashboard.
+                  </p>
+                </div>
+
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">
                     Hospital / Facility Name
@@ -521,13 +537,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* TAB 4: BEDSIDE SECURITY & PRIVACY */}
+          {/* TAB 4: SECURITY & PRIVACY */}
           {activeTab === 'security' && (
             <div className="space-y-4">
               <div className="p-3 bg-slate-900 rounded-xl text-white">
                 <div className="font-bold flex items-center gap-1.5 mb-1 text-xs text-amber-400">
                   <ShieldAlert className="w-4 h-4" />
-                  <span>Bedside Security &amp; Local Privacy Suite</span>
+                  <span>Security &amp; Local Privacy Suite</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
                   Protect pediatric patient records when conducting busy ward rounds. When locked, an authorized 4-digit PIN or Clinician Recovery Secret is required to access data.
@@ -539,7 +555,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="pr-3">
                   <div className="font-semibold text-slate-900 text-xs flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Bedside PIN lock</span>
+                    <span>PIN lock</span>
                     {form.pinLockEnabled && (
                       <span className="text-[10px] bg-emerald-100 text-emerald-800 font-medium px-1.5 py-0.2 rounded">
                         active

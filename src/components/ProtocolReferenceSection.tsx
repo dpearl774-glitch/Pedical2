@@ -27,8 +27,8 @@ export const ProtocolReferenceSection: React.FC = () => {
             <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700">
               <BookOpen className="w-4 h-4" />
             </div>
-            <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
-              Clinical protocols &amp; references
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Clinical Protocols &amp; References
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">

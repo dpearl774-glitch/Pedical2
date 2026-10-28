@@ -20,6 +20,7 @@ import {
   getWHOThresholds,
   getWHOWfaThresholds,
   getWHOLfaThresholds,
+  getWHOHcfaThresholds,
   WHOLengthPoint,
 } from '../data/whoGrowthStandards';
 
@@ -47,6 +48,8 @@ export interface CalculationInput {
   local_milk_source: LocalMilkSource;
   height_cm?: number;
   sex?: ChildSex;
+  muac_mm?: number;
+  head_circumference_cm?: number;
 }
 
 export interface GrowthAssessmentResult {
@@ -55,6 +58,8 @@ export interface GrowthAssessmentResult {
     height_cm: number;
     sex: ChildSex;
     age_months?: number;
+    muac_mm?: number;
+    head_circumference_cm?: number;
   };
   classificationStatus: string;
   diagnosticIndicator: string;
@@ -65,6 +70,8 @@ export interface GrowthAssessmentResult {
   wflZScore: number;
   wfaZScore?: number;
   lfaZScore?: number;
+  muacStatus?: 'Red (< 115 mm - SAM)' | 'Yellow (115-124 mm - MAM)' | 'Green (≥ 125 mm - Normal)' | 'Not Recorded';
+  headCircumferenceStatus?: 'Microcephaly (< -2 SD)' | 'Normal (Median ± 2 SD)' | 'Macrocephaly (> +2 SD)' | 'Not Recorded';
 }
 
 export interface FeedingTargetSummary {
@@ -76,6 +83,11 @@ export interface FeedingTargetSummary {
   feedingIntervalHours: FeedingInterval;
   mlPerKgPerDay: number;
   safeMinMlPerKg: number;
+  // Dietitian Macronutrient Delivery Metrics
+  dailyEnergyKcal: number;
+  energyKcalPerKgDay: number;
+  dailyProteinGrams: number;
+  proteinGramsPerKgDay: number;
 }
 
 export interface BatchRecipeItem {
@@ -131,10 +143,37 @@ export function evaluateGrowthStatus(
   height_cm: number,
   sex: ChildSex,
   edema_severity: EdemaSeverity,
-  age_months?: number
+  age_months?: number,
+  muac_mm?: number,
+  head_circumference_cm?: number
 ): GrowthAssessmentResult {
   const whoThresholds = getWHOThresholds(height_cm, sex);
   const diffFromSd3 = weight_kg - whoThresholds.sd3neg;
+
+  // MUAC status evaluation for pediatric nutritionists
+  let muacStatus: GrowthAssessmentResult['muacStatus'] = 'Not Recorded';
+  if (muac_mm !== undefined && muac_mm > 0) {
+    if (muac_mm < 115) {
+      muacStatus = 'Red (< 115 mm - SAM)';
+    } else if (muac_mm <= 124) {
+      muacStatus = 'Yellow (115-124 mm - MAM)';
+    } else {
+      muacStatus = 'Green (≥ 125 mm - Normal)';
+    }
+  }
+
+  // Head Circumference evaluation (OFC for microcephaly/macrocephaly)
+  let headCircumferenceStatus: GrowthAssessmentResult['headCircumferenceStatus'] = 'Not Recorded';
+  if (head_circumference_cm !== undefined && head_circumference_cm > 0 && age_months !== undefined && age_months >= 0) {
+    const hcTh = getWHOHcfaThresholds(age_months, sex);
+    if (head_circumference_cm < hcTh.sd2neg) {
+      headCircumferenceStatus = 'Microcephaly (< -2 SD)';
+    } else if (head_circumference_cm > hcTh.sd2) {
+      headCircumferenceStatus = 'Macrocephaly (> +2 SD)';
+    } else {
+      headCircumferenceStatus = 'Normal (Median ± 2 SD)';
+    }
+  }
 
   // Precise continuous Z-score calculations
   let wflZScore = 0;
@@ -172,10 +211,12 @@ export function evaluateGrowthStatus(
     zScoreCategory = '> +1 SD';
   }
 
+  const isMuacSam = muac_mm !== undefined && muac_mm > 0 && muac_mm < 115;
+
   // Condition 1: Bilateral clinical edema (+ / ++ or +++)
   if (edema_severity === 'Mild/Moderate (+ / ++)' || edema_severity === 'Severe (+++)') {
     return {
-      anthropometricProfile: { weight_kg, height_cm, sex, age_months },
+      anthropometricProfile: { weight_kg, height_cm, sex, age_months, muac_mm, head_circumference_cm },
       classificationStatus: 'ACUTE MALNUTRITION: Nutritional Oedema (WHO 2023)',
       diagnosticIndicator: 'Bilateral pitting oedema present (inpatient stabilization required)',
       isSam: true,
@@ -185,16 +226,21 @@ export function evaluateGrowthStatus(
       wflZScore,
       wfaZScore,
       lfaZScore,
+      muacStatus,
+      headCircumferenceStatus,
     };
   }
 
-  // Condition 2: Weight below -3 SD threshold
-  if (weight_kg < whoThresholds.sd3neg) {
+  // Condition 2: Weight below -3 SD threshold or MUAC < 115 mm
+  if (weight_kg < whoThresholds.sd3neg || isMuacSam) {
+    const reason = isMuacSam && weight_kg >= whoThresholds.sd3neg
+      ? `MUAC is ${muac_mm} mm (< 115 mm cutoff for Severe Acute Malnutrition)`
+      : 'Weight is below -3 Standard Deviations on the WHO Weight-for-Length Growth Standard';
+
     return {
-      anthropometricProfile: { weight_kg, height_cm, sex, age_months },
-      classificationStatus: 'ACUTE MALNUTRITION: Severe Wasting (WHZ < -3 SD, WHO 2023)',
-      diagnosticIndicator:
-        'Weight is below -3 Standard Deviations on the WHO Weight-for-Length Growth Standard',
+      anthropometricProfile: { weight_kg, height_cm, sex, age_months, muac_mm, head_circumference_cm },
+      classificationStatus: 'ACUTE MALNUTRITION: Severe Wasting (WHO 2023)',
+      diagnosticIndicator: reason,
       isSam: true,
       whoThresholds,
       zScoreCategory,
@@ -202,14 +248,16 @@ export function evaluateGrowthStatus(
       wflZScore,
       wfaZScore,
       lfaZScore,
+      muacStatus,
+      headCircumferenceStatus,
     };
   }
 
   // Otherwise: Moderate Malnutrition / Verify Clinical Criteria
   return {
-    anthropometricProfile: { weight_kg, height_cm, sex, age_months },
+    anthropometricProfile: { weight_kg, height_cm, sex, age_months, muac_mm, head_circumference_cm },
     classificationStatus: 'Moderate Wasting / Clinical Verification (WHO 2023)',
-    diagnosticIndicator: `Weight (${weight_kg.toFixed(1)} kg) is at or above -3 SD threshold (${whoThresholds.sd3neg.toFixed(1)} kg for ${height_cm} cm) with no bilateral pitting oedema. Check mid-upper arm circumference (MUAC) and medical complications.`,
+    diagnosticIndicator: `Weight (${weight_kg.toFixed(1)} kg) is at or above -3 SD threshold (${whoThresholds.sd3neg.toFixed(1)} kg for ${height_cm} cm) with no bilateral pitting oedema. Check MUAC (${muac_mm ? `${muac_mm} mm` : 'not logged'}) and medical complications.`,
     isSam: false,
     whoThresholds,
     zScoreCategory,
@@ -217,11 +265,13 @@ export function evaluateGrowthStatus(
     wflZScore,
     wfaZScore,
     lfaZScore,
+    muacStatus,
+    headCircumferenceStatus,
   };
 }
 
 /**
- * Execute Part 2: Liquid Volume Calculation Logic
+ * Execute Part 2: Liquid Volume Calculation Logic & Macronutrient Breakdown
  */
 export function calculateFeedingTargets(
   weight_kg: number,
@@ -260,6 +310,17 @@ export function calculateFeedingTargets(
   // Target Volume Per Feed = (Daily Volume ÷ feeds per day), rounded to nearest multiple of 5 mL
   const targetVolumePerFeed = Math.round(unroundedPerFeed / 5) * 5;
 
+  // Dietitian Macronutrient Delivery
+  // F-75: 75 kcal/100 mL, 0.9g protein/100 mL
+  // F-100: 100 kcal/100 mL, 2.9g protein/100 mL
+  const energyPer100ml = therapeutic_phase === 'F-75 Stabilization' ? 75 : 100;
+  const proteinPer100ml = therapeutic_phase === 'F-75 Stabilization' ? 0.9 : 2.9;
+
+  const dailyEnergyKcal = Math.round((dailyVolume * energyPer100ml) / 100);
+  const energyKcalPerKgDay = Number((dailyEnergyKcal / weight_kg).toFixed(1));
+  const dailyProteinGrams = Number(((dailyVolume * proteinPer100ml) / 100).toFixed(1));
+  const proteinGramsPerKgDay = Number((dailyProteinGrams / weight_kg).toFixed(1));
+
   return {
     targetVolumePerFeed,
     unroundedPerFeed: Number(unroundedPerFeed.toFixed(1)),
@@ -269,6 +330,10 @@ export function calculateFeedingTargets(
     feedingIntervalHours: feeding_interval_hours,
     mlPerKgPerDay,
     safeMinMlPerKg,
+    dailyEnergyKcal,
+    energyKcalPerKgDay,
+    dailyProteinGrams,
+    proteinGramsPerKgDay,
   };
 }
 
@@ -459,7 +524,9 @@ export function evaluatePatient(input: CalculationInput): FullEvaluationResult {
       height,
       sex,
       input.edema_severity,
-      input.age_months
+      input.age_months,
+      input.muac_mm,
+      input.head_circumference_cm
     );
   }
 
@@ -633,6 +700,53 @@ export function calculateReSoMalProtocol(
         action: 'Record pulse, respiration, stool frequency, vomiting, and hydration signs on bedside flow sheet.',
       },
     ],
+  };
+}
+
+/**
+ * Calculates rate of weight gain (g/kg/day) for dietitians monitoring rehabilitation / catch-up growth
+ */
+export interface WeightGainRateResult {
+  weightGainGramsDay: number;
+  weightGainGPerKgDay: number;
+  classification: 'Poor (< 5 g/kg/day)' | 'Moderate (5 - 10 g/kg/day)' | 'Good / Excellent (> 10 g/kg/day)';
+  clinicalInterpretation: string;
+}
+
+export function calculateWeightGainRate(
+  initialWeightKg: number,
+  currentWeightKg: number,
+  daysElapsed: number
+): WeightGainRateResult {
+  if (daysElapsed <= 0 || initialWeightKg <= 0) {
+    return {
+      weightGainGramsDay: 0,
+      weightGainGPerKgDay: 0,
+      classification: 'Poor (< 5 g/kg/day)',
+      clinicalInterpretation: 'Insufficient observation period or invalid initial weight.',
+    };
+  }
+
+  const weightDiffGrams = (currentWeightKg - initialWeightKg) * 1000;
+  const weightGainGramsDay = Number((weightDiffGrams / daysElapsed).toFixed(1));
+  const weightGainGPerKgDay = Number((weightGainGramsDay / initialWeightKg).toFixed(1));
+
+  let classification: WeightGainRateResult['classification'] = 'Poor (< 5 g/kg/day)';
+  let clinicalInterpretation = 'Poor weight gain (< 5 g/kg/day). Investigate persistent diarrhea, TB, HIV, UTI, anorexia, or feed refusal.';
+
+  if (weightGainGPerKgDay >= 10) {
+    classification = 'Good / Excellent (> 10 g/kg/day)';
+    clinicalInterpretation = 'Good catch-up growth (> 10 g/kg/day). Continue rehabilitation plan and assess for outpatient OTP discharge.';
+  } else if (weightGainGPerKgDay >= 5) {
+    classification = 'Moderate (5 - 10 g/kg/day)';
+    clinicalInterpretation = 'Moderate weight gain (5–10 g/kg/day). Verify feed compliance and dietary energy intake.';
+  }
+
+  return {
+    weightGainGramsDay,
+    weightGainGPerKgDay,
+    classification,
+    clinicalInterpretation,
   };
 }
 

@@ -34,34 +34,34 @@ export const ReminderNotificationBanner: React.FC<ReminderNotificationBannerProp
   return (
     <aside
       aria-label="Clinical alert"
-      className="no-print sticky top-[44px] sm:top-[50px] z-30 w-full bg-slate-900 border-b border-slate-800 text-slate-100 shadow-sm"
+      className="no-print sticky top-[52px] sm:top-[56px] z-30 w-full bg-amber-50 border-b border-amber-200 text-amber-950 shadow-2xs"
     >
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 py-1.5 sm:py-2 flex items-center justify-between gap-2 text-xs">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2 text-xs">
         {/* Left: Indicator & Brief Message */}
         <div
           onClick={onOpenCenter}
           className="flex items-center gap-2 cursor-pointer flex-1 min-w-0"
-          title="Open reminders"
+          title="Open reminders center"
         >
           <span
             className={`w-2 h-2 rounded-full shrink-0 ${
               isUrgent
-                ? 'bg-rose-500 animate-pulse'
+                ? 'bg-rose-600 animate-pulse'
                 : isHigh
-                ? 'bg-amber-400'
-                : 'bg-blue-400'
+                ? 'bg-amber-600'
+                : 'bg-blue-600'
             }`}
           />
 
           <div className="flex items-center gap-1.5 min-w-0 truncate">
-            <span className="font-bold text-white shrink-0">
+            <span className="font-bold text-amber-950 shrink-0">
               {reminder.patientIdentifier}
             </span>
-            <span className="text-slate-400 shrink-0">&middot;</span>
-            <span className="truncate text-slate-200">
+            <span className="text-amber-400 shrink-0">&middot;</span>
+            <span className="truncate text-amber-900 font-medium">
               {reminder.title}
             </span>
-            <span className="text-[11px] text-amber-300 font-medium shrink-0 ml-1">
+            <span className="text-[11px] text-amber-700 font-semibold shrink-0 ml-1">
               ({formatReminderDueDate(reminder.dueDateTime)})
             </span>
           </div>

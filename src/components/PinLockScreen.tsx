@@ -311,7 +311,7 @@ export const PinLockScreen: React.FC<PinLockScreenProps> = ({
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed">
-              Enter your designated Clinician Staff ID, Pediatric License number, or recovery passphrase to unlock this bedside session.
+              Enter your designated Clinician Staff ID, Pediatric License number, or recovery passphrase to unlock this session.
             </p>
 
             <div>

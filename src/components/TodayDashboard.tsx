@@ -97,10 +97,13 @@ const CLINICAL_TIPS: ClinicalTip[] = [
   },
 ];
 
+import { getClinicianFirstName } from '../utils/appSettings';
+
 export interface TodayDashboardProps {
   patients: WardPatient[];
   activePatient?: WardPatient;
   facilityName?: string;
+  clinicianName?: string;
   reminders: PediatricReminder[];
   onNavigate: (tabId: string, patientId?: string) => void;
   onAdmitNewChild: () => void;
@@ -111,6 +114,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
   patients,
   activePatient,
   facilityName = 'Pediatric Nutrition Unit',
+  clinicianName = '',
   reminders,
   onNavigate,
   onAdmitNewChild,
@@ -241,19 +245,19 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* 1. TOP HERO: Professional Clinical Header with Original PediCal Blue */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className={`w-8 h-8 rounded-full flex items-center justify-center ${greetingData.color}`}>
+              <span className={`w-8 h-8 rounded-xl flex items-center justify-center ${greetingData.color}`}>
                 <GreetingIcon className="w-4 h-4" />
               </span>
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 {greetingData.dateFormatted} &middot; <span className="text-blue-700 font-bold">{facilityName}</span>
               </span>
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-slate-900 tracking-tight">
-              {greetingData.text}, Clinician
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
+              {greetingData.text}, {getClinicianFirstName(clinicianName)}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 max-w-2xl font-sans leading-relaxed">
               Inpatient pediatric nutrition census, therapeutic milk feeds, and growth monitoring schedule.
@@ -284,7 +288,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
       {/* 2. WARD BREAKDOWN: Metric Cards (Clean minimal tiles with signature PediCal blue accents) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h2 className="font-serif text-lg sm:text-xl font-normal text-slate-900 tracking-tight">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             Ward Breakdown
           </h2>
           <span className="text-xs text-slate-500 font-medium">
@@ -296,10 +300,10 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 1: Total Census */}
           <div
             onClick={() => onNavigate('ward')}
-            className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 hover:border-blue-300 hover:bg-blue-50/20 transition-all cursor-pointer group shadow-xs"
+            className="bg-white rounded-2xl p-4 sm:p-5 hover:bg-blue-50/20 transition-all cursor-pointer group shadow-xs"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
                 <Bed className="w-3.5 h-3.5" />
               </span>
               <span className="text-xs text-slate-600 font-semibold">
@@ -319,10 +323,10 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 2: F-75 Stabilization */}
           <div
             onClick={() => onNavigate('calculator')}
-            className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 hover:border-blue-300 hover:bg-blue-50/20 transition-all cursor-pointer group shadow-xs"
+            className="bg-white rounded-2xl p-4 sm:p-5 hover:bg-blue-50/20 transition-all cursor-pointer group shadow-xs"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-7 h-7 rounded-lg bg-blue-100 border border-blue-200 text-blue-800 flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
                 <Droplets className="w-3.5 h-3.5" />
               </span>
               <span className="text-xs text-blue-900 font-semibold">
@@ -342,10 +346,10 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 3: F-100 Rehabilitation */}
           <div
             onClick={() => onNavigate('recipe')}
-            className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 hover:border-emerald-300 hover:bg-emerald-50/20 transition-all cursor-pointer group shadow-xs"
+            className="bg-white rounded-2xl p-4 sm:p-5 hover:bg-emerald-50/20 transition-all cursor-pointer group shadow-xs"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
                 <Scale className="w-3.5 h-3.5" />
               </span>
               <span className="text-xs text-emerald-900 font-semibold">
@@ -365,17 +369,17 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           {/* Tile 4: Reminders Due */}
           <div
             onClick={onOpenReminders}
-            className={`rounded-2xl border p-4 sm:p-5 transition-all cursor-pointer group shadow-xs ${
+            className={`rounded-2xl p-4 sm:p-5 transition-all cursor-pointer group shadow-xs ${
               summary.overdueRemindersCount > 0
-                ? 'bg-rose-50/60 border-rose-200 hover:border-rose-300'
-                : 'bg-white border-slate-200 hover:border-slate-300'
+                ? 'bg-rose-50/70 hover:bg-rose-100/70'
+                : 'bg-white hover:bg-slate-50'
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
               <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
                 summary.overdueRemindersCount > 0
-                  ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                  : 'bg-slate-100 text-slate-700 border border-slate-200'
+                  ? 'bg-rose-100 text-rose-700'
+                  : 'bg-slate-100 text-slate-700'
               }`}>
                 <Clock className="w-3.5 h-3.5" />
               </span>
@@ -407,7 +411,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
               <ShieldCheck className="w-4 h-4 text-blue-400" />
               <span>Evidence-Based Standards</span>
             </span>
-            <h3 className="font-serif text-xl sm:text-2xl font-normal text-white tracking-tight">
+            <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Clinical Protocol Safeguards Active
             </h3>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
@@ -479,7 +483,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
         </div>
 
         <div className="space-y-1.5">
-          <h3 className="font-serif text-lg sm:text-xl font-normal text-slate-900 tracking-tight">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
             {activeTip.title}
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-3xl font-sans">
@@ -498,7 +502,7 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
         {/* Left Column: Clinical Action Queue (7 Cols) */}
         <div className="lg:col-span-7 space-y-3">
           <div className="flex items-center justify-between px-1">
-            <h2 className="font-serif text-lg sm:text-xl font-normal text-slate-900 tracking-tight">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
               Inpatient Work Queue
             </h2>
             <span className="text-xs text-slate-500 font-medium">
@@ -602,92 +606,70 @@ export const TodayDashboard: React.FC<TodayDashboardProps> = ({
           </div>
         </div>
 
-        {/* Right Column: System Status (5 Cols) */}
+        {/* Right Column: Quick Ward Actions & App Install (5 Cols) */}
         <div className="lg:col-span-5 space-y-3">
           <div className="flex items-center justify-between px-1">
-            <h2 className="font-serif text-lg sm:text-xl font-normal text-slate-900 tracking-tight">
-              Storage &amp; Offline
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+              Clinical Actions
             </h2>
             <span className="text-xs text-slate-500 font-medium">
-              Local Engine
+              Direct Access
             </span>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-            {/* PWA Tile */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                    <Check className="w-3.5 h-3.5" />
-                  </span>
-                  <span className="text-xs font-semibold text-slate-900">
-                    Progressive Web App (PWA)
-                  </span>
-                </div>
-                <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1">
-                  <Wifi className="w-3 h-3" />
-                  <span>{pwa.isInstalled ? 'Installed' : 'Offline Ready'}</span>
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-                Service Worker active with automatic caching. Works 100% offline at the bedside without internet access.
-              </p>
-              {pwa.canInstall && (
-                <button
-                  type="button"
-                  onClick={() => pwa.promptInstall()}
-                  className="w-full mt-1 py-2 px-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Install PediCal App to Device</span>
-                </button>
-              )}
-            </div>
-
-            {/* IndexedDB Tile */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                    <Database className="w-3.5 h-3.5" />
-                  </span>
-                  <span className="text-xs font-semibold text-slate-900">
-                    Storage: IndexedDB Active
-                  </span>
-                </div>
-                <span className="text-[11px] font-mono font-semibold text-emerald-700">
-                  {idbStats?.ready ? 'Connected' : 'Initializing'}
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-500 space-y-1 font-sans">
-                <div className="flex justify-between">
-                  <span>Engine:</span>
-                  <strong className="font-mono text-slate-800">{idbStats?.dbName || 'pedical_indexed_db_v1'}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>Patients in IndexedDB:</span>
-                  <strong className="text-slate-800">{idbStats?.patientCount ?? patients.length} records</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>Bedside Feeding Stores:</span>
-                  <strong className="text-slate-800">{idbStats?.feedingLogCount ?? patients.length} active</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>Dual Persistence:</span>
-                  <span className="text-emerald-700 font-semibold">IndexedDB + LocalStorage Sync</span>
-                </div>
-              </div>
-            </div>
-
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+            {/* View Roster Primary Action */}
             <button
               type="button"
               onClick={() => onNavigate('ward')}
-              className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 min-h-[40px]"
+              className="w-full py-3 px-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-between min-h-[44px]"
             >
-              <span>View Roster ({patients.length} Children)</span>
+              <div className="flex items-center gap-2">
+                <Bed className="w-4 h-4" />
+                <span>Inpatient Ward Roster ({patients.length} Beds)</span>
+              </div>
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            {/* Quick Screener Shortcut */}
+            <button
+              type="button"
+              onClick={() => onNavigate('screener')}
+              className="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-800 font-semibold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-between min-h-[40px]"
+            >
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-blue-700" />
+                <span>Rapid Field Screener</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+
+            {/* ReSoMal Rehydration Shortcut */}
+            <button
+              type="button"
+              onClick={() => onNavigate('resomal')}
+              className="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-800 font-semibold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-between min-h-[40px]"
+            >
+              <div className="flex items-center gap-2">
+                <Droplets className="w-4 h-4 text-teal-700" />
+                <span>ReSoMal Rehydration Protocol</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+
+            {/* Optional PWA Offline App Installation (Brief & Uncluttered) */}
+            {pwa.canInstall && (
+              <div className="pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => pwa.promptInstall()}
+                  className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Install App for Bedside Offline Use</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

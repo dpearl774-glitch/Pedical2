@@ -46,7 +46,7 @@ export default function App() {
   const [settings, setSettings] = useState<AppSettings>(() => loadAppSettings());
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
 
-  // Bedside Security PIN Lock State (Persistent across reload while locked)
+  // Security PIN Lock State (Persistent across reload while locked)
   const [isLocked, setIsLocked] = useState<boolean>(() => {
     try {
       const currentSettings = loadAppSettings();
@@ -207,6 +207,10 @@ export default function App() {
   // Active patient object safely derived without crashing on empty roster
   const activePatient = useMemo(() => {
     if (!patients || patients.length === 0) return undefined;
+    const activeList = patients.filter((p) => !p.isDischarged);
+    if (activeList.length > 0) {
+      return activeList.find((p) => p.id === activePatientId) || activeList[0];
+    }
     return patients.find((p) => p.id === activePatientId) || patients[0];
   }, [patients, activePatientId]);
 
@@ -365,6 +369,58 @@ export default function App() {
     setShowPrintModal(true);
   };
 
+  // Discharge inpatient with WHO outcome and step-down tracking
+  const handleDischargePatient = (
+    patientId: string,
+    dischargeData: Partial<WardPatient>,
+    navigateToOtp?: boolean
+  ) => {
+    setPatients((prev) =>
+      prev.map((p) => {
+        if (p.id === patientId) {
+          return {
+            ...p,
+            isDischarged: true,
+            dischargeDate: dischargeData.dischargeDate || new Date().toISOString().split('T')[0],
+            dischargeOutcome: dischargeData.dischargeOutcome || 'Discharged to Outpatient OTP',
+            dischargeWeightKg: dischargeData.dischargeWeightKg ?? p.input.weight_kg,
+            dischargeMuacMm: dischargeData.dischargeMuacMm ?? 120,
+            dischargeEdema: dischargeData.dischargeEdema || 'None',
+            dischargeNotes: dischargeData.dischargeNotes || '',
+          };
+        }
+        return p;
+      })
+    );
+
+    if (navigateToOtp) {
+      setActivePatientId(patientId);
+      setActiveTab('outpatient');
+    }
+  };
+
+  // Re-admit previously discharged patient back into active bed roster
+  const handleReadmitPatient = (patientId: string) => {
+    setPatients((prev) =>
+      prev.map((p) => {
+        if (p.id === patientId) {
+          return {
+            ...p,
+            isDischarged: false,
+          };
+        }
+        return p;
+      })
+    );
+    setActivePatientId(patientId);
+  };
+
+  // Directly navigate to Outpatient OTP tab with patient pre-selected
+  const handleNavigateToOtp = (patient: WardPatient) => {
+    setActivePatientId(patient.id);
+    setActiveTab('outpatient');
+  };
+
   // Synchronize and persist feeding records for individual active patient
   const handleUpdatePatientFeedingRecords = useCallback(
     (
@@ -395,11 +451,12 @@ export default function App() {
   // Bridge from Quick Screener to Inpatient Admission
   const handleAdmitFromScreener = (childData: Partial<CalculationInput>) => {
     const nextCotNum = `Cot ${String(patients.length + 1).padStart(2, '0')}`;
-    const nextMrn = `Ref-${100 + patients.length + 1}`;
+    const nextMrn = childData.mrn || `Ref-${100 + patients.length + 1}`;
     const baseInput: Partial<CalculationInput> = activePatient ? activePatient.input : {};
+    const patientName = childData.patient_name || `Screened Child (${nextCotNum})`;
     const newPatient: WardPatient = {
       id: `cot-${Date.now()}`,
-      name: `Screened Child (${nextCotNum})`,
+      name: patientName,
       cotNumber: nextCotNum,
       mrn: nextMrn,
       admissionDate: new Date().toISOString().split('T')[0],
@@ -413,10 +470,12 @@ export default function App() {
         height_cm: childData.height_cm ?? 70.0,
         age_months: childData.age_months ?? 12,
         sex: childData.sex ?? 'Boy',
+        muac_mm: childData.muac_mm ?? 110,
+        head_circumference_cm: childData.head_circumference_cm ?? 46.0,
         edema_severity: childData.edema_severity ?? 'None',
         cot_number: nextCotNum,
         mrn: nextMrn,
-        patient_name: `Screened Child (${nextCotNum})`,
+        patient_name: patientName,
       },
     };
     setPatients((prev) => [...prev, newPatient]);
@@ -434,7 +493,7 @@ export default function App() {
         <Bed className="w-6 h-6" />
       </div>
       <div className="space-y-1">
-        <h3 className="font-serif text-xl font-medium text-slate-900">No active inpatient</h3>
+        <h3 className="text-xl font-bold text-slate-900">No active inpatient</h3>
         <p className="text-xs text-slate-500 leading-relaxed font-sans">
           The ward roster currently has zero admitted children. Admit a child or use the quick screener to begin therapeutic care planning.
         </p>
@@ -500,24 +559,22 @@ export default function App() {
           <div className="flex items-center gap-1 text-xs">
             {[
               { id: 'today', label: 'Today' },
-              { id: 'screener', label: 'Screener' },
-              { id: 'ward', label: `Ward (${patients.length})` },
-              { id: 'calculator', label: 'Inpatient' },
-              { id: 'resomal', label: 'ReSoMal' },
-              { id: 'outpatient', label: 'Outpatient' },
+              { id: 'ward', label: `Ward (${patients.filter((p) => !p.isDischarged).length})` },
+              { id: 'calculator', label: 'Inpatient Calculator' },
+              { id: 'schedule', label: 'Bedside Feed Log' },
               { id: 'chart', label: 'Growth Chart' },
-              { id: 'feeding', label: 'Targets' },
-              { id: 'recipe', label: 'Recipe' },
-              { id: 'schedule', label: 'Feed Log' },
+              { id: 'screener', label: 'Field Screener' },
+              { id: 'outpatient', label: 'Outpatient OTP' },
+              { id: 'resomal', label: 'ReSoMal' },
               { id: 'reference', label: 'Protocols' },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-1.5 px-3 rounded-xl font-medium transition-colors ${
+                className={`py-1.5 px-3 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
                   activeTab === tab.id
-                    ? 'bg-blue-700 text-white shadow-xs font-semibold'
+                    ? 'bg-blue-700 text-white font-semibold shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
@@ -549,6 +606,7 @@ export default function App() {
             patients={patients}
             reminders={reminders}
             facilityName={settings.facilityName}
+            clinicianName={settings.clinicianName}
             onNavigate={(tab: string, patientId?: string) => {
               if (patientId) {
                 setActivePatientId(patientId);
@@ -565,6 +623,8 @@ export default function App() {
         {/* TAB: QUICK SCREENER */}
         {activeTab === 'screener' && (
           <QuickScreeningSection
+            facilityName={settings.facilityName}
+            clinicianName={settings.clinicianName}
             onAdmitToInpatient={handleAdmitFromScreener}
             onSendToOutpatient={handleSendToOutpatientFromScreener}
           />
@@ -583,6 +643,9 @@ export default function App() {
             onDeletePatient={handleDeletePatient}
             onPrintPatient={handlePrintIndividualPatient}
             onBatchPrint={handleBatchPrint}
+            onDischargePatient={handleDischargePatient}
+            onReadmitPatient={handleReadmitPatient}
+            onNavigateToOtp={handleNavigateToOtp}
           />
         )}
 
@@ -992,7 +1055,7 @@ export default function App() {
       <MobileBottomNav
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab)}
-        patientCount={patients.length}
+        patientCount={patients.filter((p) => !p.isDischarged).length}
       />
 
       {/* Bedside Order Print Modal (Supports Single Patient & Batch Ward) */}
@@ -1047,7 +1110,7 @@ export default function App() {
         activePatientId={activePatientId}
       />
 
-      {/* Bedside Security PIN Lock Screen Overlay (Zero Unauthorized Access) */}
+      {/* Security PIN Lock Screen Overlay (Zero Unauthorized Access) */}
       {isLocked && settings.pinLockEnabled && (
         <PinLockScreen
           facilityName={settings.facilityName}

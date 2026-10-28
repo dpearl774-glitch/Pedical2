@@ -60,6 +60,18 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
     update('age_months', next);
   };
 
+  const adjustMuac = (delta: number) => {
+    const current = input.muac_mm ?? 120;
+    const next = Math.max(70, Math.min(220, current + delta));
+    update('muac_mm', next);
+  };
+
+  const adjustHeadCircumference = (delta: number) => {
+    const current = input.head_circumference_cm ?? 46.0;
+    const next = Math.max(30.0, Math.min(58.0, Number((current + delta).toFixed(1))));
+    update('head_circumference_cm', next);
+  };
+
   const applyPreset = (preset: Partial<CalculationInput>) => {
     onChange({
       ...input,
@@ -74,8 +86,8 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
       {/* Header bar: Title & Reset Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
-            Clinical parameters
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Clinical Parameters
           </h2>
           <div className="text-xs text-slate-500 mt-0.5">
             Anthropometric inputs and therapeutic feeding regimen
@@ -257,7 +269,7 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
         <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
           Measurements
         </div>
-        <div className={`grid grid-cols-1 ${isFullAssessment ? 'sm:grid-cols-2 lg:grid-cols-3' : ''} gap-4`}>
+        <div className={`grid grid-cols-1 ${isFullAssessment ? 'sm:grid-cols-2 lg:grid-cols-4' : ''} gap-4`}>
           {/* Patient Weight (kg) with 48px Steppers */}
           <div className="space-y-1.5 p-3.5 bg-slate-50/70 rounded-xl border border-slate-200">
             <div className="flex items-center justify-between">
@@ -412,6 +424,102 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
 
                 <div className="text-[11px] text-slate-500 pt-1">
                   Completed months for WHO WAZ &amp; HAZ curves
+                </div>
+              </div>
+
+              {/* MUAC (mm) with 48px Steppers */}
+              <div className="space-y-1.5 p-3.5 bg-slate-50/70 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-slate-700">
+                    MUAC (mm)
+                  </label>
+                  <span className="text-xs font-medium text-slate-500">70 – 220 mm</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => adjustMuac(-1)}
+                    className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 active:scale-95 transition-all font-bold shrink-0 shadow-xs"
+                    title="Decrease 1 mm"
+                    aria-label="Decrease MUAC by 1 mm"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+
+                  <div className="relative flex-1">
+                    <ClinicalNumberInput
+                      value={input.muac_mm ?? 120}
+                      onChange={(val) => update('muac_mm', val)}
+                      min={70}
+                      max={220}
+                      isInteger={true}
+                      unit="mm"
+                      className="w-full text-center text-lg sm:text-xl font-bold text-slate-900 bg-white border border-slate-300 rounded-xl h-12 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 shadow-xs"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => adjustMuac(1)}
+                    className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 active:scale-95 transition-all font-bold shrink-0 shadow-xs"
+                    title="Increase 1 mm"
+                    aria-label="Increase MUAC by 1 mm"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="text-[11px] text-slate-500 pt-1">
+                  Red: &lt;115 mm &middot; Yellow: 115–124 mm &middot; Green: &ge;125 mm
+                </div>
+              </div>
+
+              {/* Head Circumference (cm) with 48px Steppers */}
+              <div className="space-y-1.5 p-3.5 bg-slate-50/70 rounded-xl shadow-xs">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Head Circumference (cm)
+                  </label>
+                  <span className="text-xs font-medium text-slate-500">30 – 58 cm</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => adjustHeadCircumference(-0.5)}
+                    className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl bg-white text-slate-700 hover:bg-slate-100 active:scale-95 transition-all font-bold shrink-0 shadow-xs"
+                    title="Decrease 0.5 cm"
+                    aria-label="Decrease Head Circumference by 0.5 cm"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+
+                  <div className="relative flex-1">
+                    <ClinicalNumberInput
+                      value={input.head_circumference_cm ?? 46.0}
+                      onChange={(val) => update('head_circumference_cm', val)}
+                      min={30.0}
+                      max={58.0}
+                      step={0.5}
+                      unit="cm"
+                      className="w-full text-center text-lg sm:text-xl font-bold text-slate-900 bg-white rounded-xl h-12 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => adjustHeadCircumference(0.5)}
+                    className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-xl bg-white text-slate-700 hover:bg-slate-100 active:scale-95 transition-all font-bold shrink-0 shadow-xs"
+                    title="Increase 0.5 cm"
+                    aria-label="Increase Head Circumference by 0.5 cm"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="text-[11px] text-slate-500 pt-1">
+                  OFC for microcephaly (&lt; -2 SD) &amp; macrocephaly (&gt; +2 SD)
                 </div>
               </div>
             </>

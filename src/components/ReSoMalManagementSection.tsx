@@ -109,8 +109,8 @@ Timestamp: ${new Date().toLocaleString()}`;
               <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700">
                 <Droplets className="w-4 h-4" />
               </div>
-              <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
-                ReSoMal rehydration protocol
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                ReSoMal Rehydration Protocol
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1 pl-10.5">

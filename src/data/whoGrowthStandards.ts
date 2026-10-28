@@ -256,3 +256,42 @@ export function getWHOLfaThresholds(ageMonths: number, sex: 'Boy' | 'Girl'): WHO
   const pt = interpolateWHOPoint(ageMonths, dataset);
   return { ...pt, ageMonths: pt.x };
 }
+
+// ---------------------------------------------------------------------------
+// 4. Head Circumference-for-Age (0 to 60 months) - HCFA (OFC Microcephaly/Macrocephaly)
+// ---------------------------------------------------------------------------
+export const WHO_BOYS_HCFA: WHOAgePoint[] = [
+  { x: 0, ageMonths: 0, sd3neg: 30.7, sd2neg: 31.9, sd1neg: 33.2, median: 34.5, sd1: 35.7, sd2: 37.0, sd3: 38.3 },
+  { x: 1, ageMonths: 1, sd3neg: 33.6, sd2neg: 34.9, sd1neg: 36.1, median: 37.3, sd1: 38.6, sd2: 39.8, sd3: 41.1 },
+  { x: 2, ageMonths: 2, sd3neg: 35.5, sd2neg: 36.8, sd1neg: 37.9, median: 39.1, sd1: 40.3, sd2: 41.5, sd3: 42.7 },
+  { x: 3, ageMonths: 3, sd3neg: 36.9, sd2neg: 38.1, sd1neg: 39.3, median: 40.5, sd1: 41.7, sd2: 42.9, sd3: 44.1 },
+  { x: 6, ageMonths: 6, sd3neg: 39.8, sd2neg: 41.0, sd1neg: 42.1, median: 43.3, sd1: 44.5, sd2: 45.6, sd3: 46.8 },
+  { x: 9, ageMonths: 9, sd3neg: 41.5, sd2neg: 42.6, sd1neg: 43.8, median: 45.0, sd1: 46.2, sd2: 47.3, sd3: 48.5 },
+  { x: 12, ageMonths: 12, sd3neg: 42.6, sd2neg: 43.8, sd1neg: 44.9, median: 46.1, sd1: 47.3, sd2: 48.6, sd3: 49.8 },
+  { x: 18, ageMonths: 18, sd3neg: 44.0, sd2neg: 45.1, sd1neg: 46.3, median: 47.4, sd1: 48.7, sd2: 49.9, sd3: 51.2 },
+  { x: 24, ageMonths: 24, sd3neg: 44.8, sd2neg: 46.0, sd1neg: 47.1, median: 48.3, sd1: 49.6, sd2: 50.8, sd3: 52.1 },
+  { x: 36, ageMonths: 36, sd3neg: 45.9, sd2neg: 47.1, sd1neg: 48.3, median: 49.5, sd1: 50.8, sd2: 52.1, sd3: 53.4 },
+  { x: 48, ageMonths: 48, sd3neg: 46.6, sd2neg: 47.8, sd1neg: 49.0, median: 50.3, sd1: 51.6, sd2: 52.9, sd3: 54.2 },
+  { x: 60, ageMonths: 60, sd3neg: 47.0, sd2neg: 48.3, sd1neg: 49.5, median: 50.7, sd1: 52.0, sd2: 53.3, sd3: 54.7 },
+];
+
+export const WHO_GIRLS_HCFA: WHOAgePoint[] = [
+  { x: 0, ageMonths: 0, sd3neg: 30.3, sd2neg: 31.5, sd1neg: 32.7, median: 33.9, sd1: 35.1, sd2: 36.2, sd3: 37.4 },
+  { x: 1, ageMonths: 1, sd3neg: 33.0, sd2neg: 34.2, sd1neg: 35.4, median: 36.5, sd1: 37.7, sd2: 38.9, sd3: 40.1 },
+  { x: 2, ageMonths: 2, sd3neg: 34.8, sd2neg: 36.0, sd1neg: 37.1, median: 38.3, sd1: 39.4, sd2: 40.6, sd3: 41.8 },
+  { x: 3, ageMonths: 3, sd3neg: 36.0, sd2neg: 37.2, sd1neg: 38.3, median: 39.5, sd1: 40.7, sd2: 41.8, sd3: 43.0 },
+  { x: 6, ageMonths: 6, sd3neg: 38.8, sd2neg: 40.0, sd1neg: 41.1, median: 42.2, sd1: 43.3, sd2: 44.4, sd3: 45.6 },
+  { x: 9, ageMonths: 9, sd3neg: 40.5, sd2neg: 41.6, sd1neg: 42.7, median: 43.8, sd1: 44.9, sd2: 46.0, sd3: 47.1 },
+  { x: 12, ageMonths: 12, sd3neg: 41.5, sd2neg: 42.6, sd1neg: 43.7, median: 44.9, sd1: 46.0, sd2: 47.2, sd3: 48.4 },
+  { x: 18, ageMonths: 18, sd3neg: 42.8, sd2neg: 43.9, sd1neg: 45.1, median: 46.2, sd1: 47.4, sd2: 48.6, sd3: 49.8 },
+  { x: 24, ageMonths: 24, sd3neg: 43.7, sd2neg: 44.8, sd1neg: 46.0, median: 47.2, sd1: 48.4, sd2: 49.6, sd3: 50.8 },
+  { x: 36, ageMonths: 36, sd3neg: 44.8, sd2neg: 46.0, sd1neg: 47.2, median: 48.5, sd1: 49.7, sd2: 50.9, sd3: 52.2 },
+  { x: 48, ageMonths: 48, sd3neg: 45.5, sd2neg: 46.7, sd1neg: 48.0, median: 49.3, sd1: 50.6, sd2: 51.9, sd3: 53.1 },
+  { x: 60, ageMonths: 60, sd3neg: 46.0, sd2neg: 47.3, sd1neg: 48.6, median: 49.9, sd1: 51.2, sd2: 52.5, sd3: 53.8 },
+];
+
+export function getWHOHcfaThresholds(ageMonths: number, sex: 'Boy' | 'Girl'): WHOAgePoint {
+  const dataset = sex === 'Boy' ? WHO_BOYS_HCFA : WHO_GIRLS_HCFA;
+  const pt = interpolateWHOPoint(ageMonths, dataset);
+  return { ...pt, ageMonths: pt.x };
+}

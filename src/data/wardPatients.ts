@@ -21,6 +21,12 @@ export interface FeedRecord {
   notes?: string;
 }
 
+export type DischargeOutcome =
+  | 'Discharged to Outpatient OTP'
+  | 'Cured / Fully Recovered'
+  | 'Transferred to Tertiary Hospital'
+  | 'Defaulted / Left Against Advice';
+
 export interface WardPatient {
   id: string;
   cotNumber: string;
@@ -32,6 +38,15 @@ export interface WardPatient {
   feedingRecords?: FeedRecord[];
   shiftStartTime?: string;
   dietitianBatchPrepTime?: string;
+
+  // Discharge & Step-down tracking
+  isDischarged?: boolean;
+  dischargeDate?: string;
+  dischargeOutcome?: DischargeOutcome;
+  dischargeWeightKg?: number;
+  dischargeMuacMm?: number;
+  dischargeEdema?: string;
+  dischargeNotes?: string;
 }
 
 export const INITIAL_WARD_PATIENTS: WardPatient[] = [
@@ -180,7 +195,9 @@ export function calculateWardMilkKitchen(patients: WardPatient[]): WardMilkKitch
   let totalCerealFlourGrams = 0;
   let totalSkimmedMilkPowderGrams = 0;
 
-  for (const patient of patients) {
+  const activePatients = patients.filter((p) => !p.isDischarged);
+
+  for (const patient of activePatients) {
     const evalRes: FullEvaluationResult = evaluatePatient(patient.input);
     const dailyMl = evalRes.feedingSummary.dailyVolume;
 

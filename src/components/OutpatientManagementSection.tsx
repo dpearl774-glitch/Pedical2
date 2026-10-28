@@ -147,8 +147,8 @@ SAFETY: Plenty of safe drinking water; breastfeed before RUTF; NO separate iron 
               <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700">
                 <HeartHandshake className="w-4 h-4" />
               </div>
-              <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
-                Outpatient therapeutic program (OTP)
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Outpatient Therapeutic Care (OTP)
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1 pl-10.5">

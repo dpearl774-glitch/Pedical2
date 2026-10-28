@@ -583,8 +583,8 @@ Report Generated: ${new Date().toLocaleString()}`;
             <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700">
               <Droplets className="w-4 h-4" />
             </div>
-            <h2 className="font-serif text-xl sm:text-2xl text-slate-900 tracking-tight font-normal">
-              Bedside feeding schedule
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Bedside Feed Log &amp; Monitoring
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-1 pl-10.5">
