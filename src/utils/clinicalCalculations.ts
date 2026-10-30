@@ -6,15 +6,16 @@
  * zero-hallucination deterministic calculations, and physiological safety guardrails.
  */
 
-export const WHO_GUIDELINE_EDITION = 'WHO 2023 Guideline';
+export const WHO_GUIDELINE_EDITION = 'WHO 2023 Guideline & 2026 Implementation Guidance';
 export const WHO_GUIDELINE_FULL_TITLE =
   'WHO guideline on the prevention and management of wasting and nutritional oedema (acute malnutrition) in infants and children under 5 years (2023)';
+export const WHO_2026_IMPLEMENTATION_GUIDANCE_TITLE =
+  'WHO Implementation guidance for the prevention and management of wasting and nutritional oedema in infants and children, covering inpatient and outpatient management, including infants under six months (Published 17 September 2026)';
 export const WHO_FORMULA_STANDARD_REF =
   'WHO Inpatient Management Protocols (F-75 Stabilization & F-100 Rehabilitation Standards)';
 export const GHANA_IMAM_GUIDELINE_TITLE =
   'Ghana Health Service (GHS) / UNICEF National Guidelines for Integrated Management of Acute Malnutrition (IMAM) & CMAM Protocols';
 export const GHANA_MOH_GHS_EDITION = 'Ghana Health Service (GHS) / UNICEF IMAM Protocols';
-
 
 import {
   getWHOThresholds,
@@ -26,6 +27,8 @@ import {
 
 export type CalculationMode = 'Quick Calculator Override' | 'Full WHO Assessment + Calculator';
 export type TherapeuticPhase = 'F-75 Stabilization' | 'F-100 Rehabilitation';
+export type F75Type = 'Standard (Milk-based / Non-cereal)' | 'Cereal-based (Low Osmolality)';
+export type F100Type = 'Standard (Milk-based / Non-cereal)' | 'Cereal-based (Low Osmolality)';
 export type EdemaSeverity = 'None' | 'Mild/Moderate (+ / ++)' | 'Severe (+++)';
 export type FeedingInterval = 2 | 3 | 4;
 export type LocalMilkSource =
@@ -33,6 +36,18 @@ export type LocalMilkSource =
   | 'Dried Whole Milk Powder'
   | 'Fresh Cow / UHT Milk';
 export type ChildSex = 'Boy' | 'Girl';
+
+export type InfantUnder6mFeedingScenario =
+  | 'breastfed_sst' // Breastfed with mother present: Supplementary Suckling Technique (EBM or Diluted F-100)
+  | 'non_breastfed_formula' // Non-breastfed / mother absent: Infant Formula or Diluted F-100
+  | 'edematous_unstable'; // Bilateral oedema or medically unstable: Inpatient Phase 1 stabilization
+
+export type FluidClinicalScenario =
+  | 'euvolemic' // Normal hydration, no acute diarrhea
+  | 'dehydration_no_shock' // Profuse watery diarrhea/vomiting without circulatory shock -> oral/NG ReSoMal
+  | 'circulatory_shock' // Emergency shock (lethargic, cold extremities, CRT > 3s, weak pulse) -> Emergency IV fluids
+  | 'oedema_no_diarrhea' // Kwashiorkor/edema without diarrhea -> rehydration strictly withheld
+  | 'oedema_watery_diarrhea'; // Kwashiorkor with confirmed watery diarrhea -> cautious ReSoMal under strict monitoring
 
 export interface CalculationInput {
   patient_id?: string;
@@ -43,6 +58,8 @@ export interface CalculationInput {
   calculation_mode: CalculationMode;
   weight_kg: number;
   therapeutic_phase: TherapeuticPhase;
+  f75_type?: F75Type;
+  f100_type?: F100Type;
   edema_severity: EdemaSeverity;
   feeding_interval_hours: FeedingInterval;
   local_milk_source: LocalMilkSource;
@@ -50,6 +67,8 @@ export interface CalculationInput {
   sex?: ChildSex;
   muac_mm?: number;
   head_circumference_cm?: number;
+  infant_scenario?: InfantUnder6mFeedingScenario;
+  fluid_scenario?: FluidClinicalScenario;
 }
 
 export interface GrowthAssessmentResult {
@@ -100,6 +119,14 @@ export interface BatchRecipeItem {
 export interface BatchRecipeResult {
   dailyVolume: number;
   scaleFactor: number;
+  formulaCategory:
+    | 'Standard F-75 (Milk-based / Non-cereal)'
+    | 'Cereal-based F-75 (Low Osmolality)'
+    | 'F-75 Stabilization'
+    | 'Standard F-100 (Milk-based / Non-cereal)'
+    | 'Cereal-based F-100 (Low Osmolality)';
+  f75Type?: F75Type;
+  f100Type?: F100Type;
   milkBase: BatchRecipeItem;
   sugarGrams: number;
   vegetableOilGrams: number;
@@ -109,6 +136,8 @@ export interface BatchRecipeResult {
   sugarVolumePercentage: number;
   energyKcalTotal: number;
   energyKcalPer100ml: number;
+  estimatedOsmolalityMOsmKg: number;
+  clinicalIndicationNote: string;
 }
 
 export interface SafetyVerificationResult {
@@ -339,11 +368,17 @@ export function calculateFeedingTargets(
 
 /**
  * Execute Part 3: Local Raw Ingredient Recipe Logic
+ * Accurately implements WHO recipes for:
+ * 1. F-75 Stabilization (35g cereal flour, 70g sugar, low sodium/protein, ~330 mOsm/kg)
+ * 2. Standard F-100 (Non-cereal milk-based: 0g flour, 50g sugar, 100 kcal/100 mL, ~419 mOsm/kg)
+ * 3. Cereal-based F-100 (35g cereal flour, 25g sugar, low osmolality ~300 mOsm/kg for osmotic diarrhea)
  */
 export function calculateBatchRecipe(
   dailyVolume: number,
   therapeutic_phase: TherapeuticPhase,
-  local_milk_source: LocalMilkSource
+  local_milk_source: LocalMilkSource,
+  f100_type: F100Type = 'Standard (Milk-based / Non-cereal)',
+  f75_type: F75Type = 'Standard (Milk-based / Non-cereal)'
 ): BatchRecipeResult {
   const scaleFactor = dailyVolume / 1000;
 
@@ -353,10 +388,12 @@ export function calculateBatchRecipe(
   let cerealFlourGrams = 0;
   let preparationStep = '';
   let energyKcalTotal = 0;
+  let formulaCategory: BatchRecipeResult['formulaCategory'];
+  let estimatedOsmolalityMOsmKg = 333;
+  let clinicalIndicationNote = '';
 
   if (therapeutic_phase === 'F-75 Stabilization') {
-    sugarGrams = Number((scaleFactor * 70).toFixed(1));
-    cerealFlourGrams = Number((scaleFactor * 35).toFixed(1));
+    const isCerealBasedF75 = f75_type === 'Cereal-based (Low Osmolality)';
 
     if (local_milk_source === 'Dried Skimmed Milk Powder') {
       milkBase = {
@@ -382,43 +419,108 @@ export function calculateBatchRecipe(
       vegetableOilGrams = Number((scaleFactor * 20).toFixed(1));
     }
 
-    preparationStep = `Mix ingredients with a small amount of warm water, boil gently for 4 minutes to cook the flour starch, cool, then top up with safe water exactly to the ${dailyVolume} mL line.`;
-    // F-75 provides 75 kcal per 100 mL
-    energyKcalTotal = Math.round(scaleFactor * 750);
-  } else {
-    // F-100 Rehabilitation
-    cerealFlourGrams = 0;
+    if (isCerealBasedF75) {
+      formulaCategory = 'Cereal-based F-75 (Low Osmolality)';
+      estimatedOsmolalityMOsmKg = 280;
+      // In Cereal-based F-75, cooked cereal flour (35g/L) replaces 50% of the simple sugar (35g/L vs 70g/L), reducing osmolality from ~333 to ~280 mOsm/kg
+      cerealFlourGrams = Number((scaleFactor * 35).toFixed(1));
+      sugarGrams = Number((scaleFactor * 35).toFixed(1)); // Reduced sugar (50% reduction)
 
-    if (local_milk_source === 'Dried Skimmed Milk Powder') {
-      milkBase = {
-        name: 'Dried Skimmed Milk Powder',
-        amount: Number((scaleFactor * 80).toFixed(1)),
-        unit: 'g',
-      };
-      sugarGrams = Number((scaleFactor * 50).toFixed(1));
-      vegetableOilGrams = Number((scaleFactor * 60).toFixed(1));
-    } else if (local_milk_source === 'Dried Whole Milk Powder') {
-      milkBase = {
-        name: 'Dried Whole Milk Powder',
-        amount: Number((scaleFactor * 110).toFixed(1)),
-        unit: 'g',
-      };
-      sugarGrams = Number((scaleFactor * 50).toFixed(1));
-      vegetableOilGrams = Number((scaleFactor * 30).toFixed(1));
+      preparationStep = `Mix cereal flour (${cerealFlourGrams}g) and sugar (${sugarGrams}g) in cold safe water. Boil gently for 4–5 minutes to cook and gelatinize the starch, hydrolyzing it into low-osmolar dextrins. Remove from heat and allow to cool below 40°C. Whisk in ${milkBase.amount} ${milkBase.unit} of ${milkBase.name}, ${vegetableOilGrams}g vegetable oil, and ${Number((scaleFactor * 20).toFixed(1))} mL CMV solution. Top up with safe water exactly to the ${dailyVolume} mL mark.`;
+      energyKcalTotal = Math.round(scaleFactor * 750);
+      clinicalIndicationNote =
+        'Cereal-based F-75 is formulated with 35 g/L cooked cereal flour replacing 50% simple sugar, lowering osmolality from ~333 to ~280 mOsm/kg. Indicated during Phase 1 stabilization for children with severe persistent osmotic diarrhea, profuse watery stools, or carbohydrate malabsorption. NOTE: Strictly contraindicated in infants under 6 months due to immature pancreatic amylase.';
     } else {
-      // Fresh Cow / UHT Milk
-      milkBase = {
-        name: 'Fresh Whole Milk',
-        amount: Number((scaleFactor * 880).toFixed(1)),
-        unit: 'mL',
-      };
-      sugarGrams = Number((scaleFactor * 75).toFixed(1));
-      vegetableOilGrams = Number((scaleFactor * 20).toFixed(1));
-    }
+      formulaCategory = 'Standard F-75 (Milk-based / Non-cereal)';
+      estimatedOsmolalityMOsmKg = 333;
+      cerealFlourGrams = 0; // Explicitly zero flour in non-cereal F-75
+      sugarGrams = Number((scaleFactor * 70).toFixed(1));
 
-    preparationStep = `Whisk ingredients with warm, pre-boiled water to dissolve, then top up with water exactly to the ${dailyVolume} mL line. Do not boil.`;
-    // F-100 provides 100 kcal per 100 mL
-    energyKcalTotal = Math.round(scaleFactor * 1000);
+      preparationStep = `Dissolve milk powder (${milkBase.amount} ${milkBase.unit}), sugar (${sugarGrams}g), and vegetable oil (${vegetableOilGrams}g) into warm, pre-boiled safe water. Add ${Number((scaleFactor * 20).toFixed(1))} mL liquid CMV solution and whisk until smooth. Top up with safe water exactly to the ${dailyVolume} mL mark. Do not boil once milk is added (boiling denatures therapeutic milk proteins).`;
+      energyKcalTotal = Math.round(scaleFactor * 750);
+      clinicalIndicationNote =
+        'Standard non-cereal F-75 is the primary Phase 1 stabilization formula (75 kcal/100 mL, 0.9g protein/100 mL, ~333 mOsm/kg) designed to restore cellular homeostasis, avoid sodium/protein overload, and prevent refeeding syndrome.';
+    }
+  } else {
+    // F-100 Rehabilitation: Check whether Standard (Non-Cereal) or Cereal-Based
+    const isCerealBased = f100_type === 'Cereal-based (Low Osmolality)';
+
+    if (isCerealBased) {
+      formulaCategory = 'Cereal-based F-100 (Low Osmolality)';
+      estimatedOsmolalityMOsmKg = 300;
+      // In Cereal-based F-100, cooked cereal flour (35g/L) replaces half the sugar (25g/L vs 50g/L), lowering osmolarity to ~300 mOsm/kg
+      cerealFlourGrams = Number((scaleFactor * 35).toFixed(1));
+
+      if (local_milk_source === 'Dried Skimmed Milk Powder') {
+        milkBase = {
+          name: 'Dried Skimmed Milk Powder',
+          amount: Number((scaleFactor * 80).toFixed(1)),
+          unit: 'g',
+        };
+        sugarGrams = Number((scaleFactor * 25).toFixed(1)); // Reduced sugar
+        vegetableOilGrams = Number((scaleFactor * 60).toFixed(1));
+      } else if (local_milk_source === 'Dried Whole Milk Powder') {
+        milkBase = {
+          name: 'Dried Whole Milk Powder',
+          amount: Number((scaleFactor * 110).toFixed(1)),
+          unit: 'g',
+        };
+        sugarGrams = Number((scaleFactor * 25).toFixed(1)); // Reduced sugar
+        vegetableOilGrams = Number((scaleFactor * 30).toFixed(1));
+      } else {
+        // Fresh Cow / UHT Milk
+        milkBase = {
+          name: 'Fresh Whole Milk',
+          amount: Number((scaleFactor * 880).toFixed(1)),
+          unit: 'mL',
+        };
+        sugarGrams = Number((scaleFactor * 35).toFixed(1)); // Reduced sugar (from 75g down to 35g)
+        vegetableOilGrams = Number((scaleFactor * 20).toFixed(1));
+      }
+
+      preparationStep = `Mix cereal flour (${cerealFlourGrams}g) and sugar (${sugarGrams}g) in cold safe water. Boil gently for 4–5 minutes to cook and gelatinize the starch, hydrolyzing it into low-osmolar dextrins. Remove from heat and allow to cool below 40°C. Whisk in ${milkBase.amount} ${milkBase.unit} of ${milkBase.name}, ${vegetableOilGrams}g vegetable oil, and ${Number((scaleFactor * 20).toFixed(1))} mL CMV solution. Top up with safe water exactly to the ${dailyVolume} mL mark.`;
+      energyKcalTotal = Math.round(scaleFactor * 1000);
+      clinicalIndicationNote =
+        'Cereal-based F-100 is indicated for children developing persistent osmotic diarrhea or watery stools on standard F-100. Cooked cereal starch hydrolyzes into low-osmolar maltodextrins, reducing osmolality from ~419 to ~300 mOsm/kg. NOTE: Strictly contraindicated in infants under 6 months due to immature pancreatic amylase.';
+    } else {
+      // Standard (Milk-based / Non-cereal) F-100
+      formulaCategory = 'Standard F-100 (Milk-based / Non-cereal)';
+      estimatedOsmolalityMOsmKg = 419;
+      cerealFlourGrams = 0; // Explicitly zero flour in non-cereal F-100
+
+      if (local_milk_source === 'Dried Skimmed Milk Powder') {
+        milkBase = {
+          name: 'Dried Skimmed Milk Powder',
+          amount: Number((scaleFactor * 80).toFixed(1)),
+          unit: 'g',
+        };
+        sugarGrams = Number((scaleFactor * 50).toFixed(1));
+        vegetableOilGrams = Number((scaleFactor * 60).toFixed(1));
+      } else if (local_milk_source === 'Dried Whole Milk Powder') {
+        milkBase = {
+          name: 'Dried Whole Milk Powder',
+          amount: Number((scaleFactor * 110).toFixed(1)),
+          unit: 'g',
+        };
+        sugarGrams = Number((scaleFactor * 50).toFixed(1));
+        vegetableOilGrams = Number((scaleFactor * 30).toFixed(1));
+      } else {
+        // Fresh Cow / UHT Milk
+        milkBase = {
+          name: 'Fresh Whole Milk',
+          amount: Number((scaleFactor * 880).toFixed(1)),
+          unit: 'mL',
+        };
+        sugarGrams = Number((scaleFactor * 75).toFixed(1));
+        vegetableOilGrams = Number((scaleFactor * 20).toFixed(1));
+      }
+
+      preparationStep = `Dissolve milk powder (${milkBase.amount} ${milkBase.unit}), sugar (${sugarGrams}g), and vegetable oil (${vegetableOilGrams}g) into warm, pre-boiled safe water. Add ${Number((scaleFactor * 20).toFixed(1))} mL liquid CMV solution and whisk until smooth. Top up with safe water exactly to the ${dailyVolume} mL mark. Do not boil once milk is added (boiling denatures high milk proteins).`;
+      // F-100 provides 100 kcal per 100 mL
+      energyKcalTotal = Math.round(scaleFactor * 1000);
+      clinicalIndicationNote =
+        'Standard non-cereal F-100 is the default catch-up growth formula for Transition & Phase 2 (100 kcal/100 mL, 2.9g protein/100 mL, ~419 mOsm/kg). Also used as the base for preparing Diluted F-100 for infants under 6 months.';
+    }
   }
 
   // Liquid CMV mineral solution: 20 mL per 1000 mL of milk
@@ -430,6 +532,9 @@ export function calculateBatchRecipe(
   return {
     dailyVolume,
     scaleFactor: Number(scaleFactor.toFixed(3)),
+    formulaCategory,
+    f75Type: therapeutic_phase === 'F-75 Stabilization' ? f75_type : undefined,
+    f100Type: therapeutic_phase === 'F-100 Rehabilitation' ? f100_type : undefined,
     milkBase,
     sugarGrams,
     vegetableOilGrams,
@@ -439,6 +544,8 @@ export function calculateBatchRecipe(
     sugarVolumePercentage,
     energyKcalTotal,
     energyKcalPer100ml,
+    estimatedOsmolalityMOsmKg,
+    clinicalIndicationNote,
   };
 }
 
@@ -542,7 +649,9 @@ export function evaluatePatient(input: CalculationInput): FullEvaluationResult {
   const initialRecipe = calculateBatchRecipe(
     feedingSummary.dailyVolume,
     input.therapeutic_phase,
-    input.local_milk_source
+    input.local_milk_source,
+    input.f100_type,
+    input.f75_type
   );
 
   // Part 4: Safety Verification Guardrails
@@ -747,6 +856,87 @@ export function calculateWeightGainRate(
     weightGainGPerKgDay,
     classification,
     clinicalInterpretation,
+  };
+}
+
+/**
+ * Emergency IV Fluid Resuscitation Protocol for SAM in Circulatory Shock
+ * Aligned with WHO 2023 Guidelines, WHO Sept 2026 Implementation Guidance & GHS IMAM Protocols.
+ *
+ * CRITICAL CLINICAL DIFFERENTIATION:
+ * - Simple dehydration (alert, drinking, no shock): treated with ORAL ReSoMal.
+ * - Circulatory shock (lethargic, limp, cold extremities, capillary refill >3s, weak/absent rapid pulse):
+ *   Oral fluids CANNOT be given. IV resuscitation is life-saving, but requires strict cardiac surveillance.
+ * - Fluid: Half-Strength Darrow's with 5% Dextrose OR Ringer's Lactate with 5% Dextrose.
+ * - Rate: 15 mL/kg infused over 1 hour.
+ * - NEVER use standard normal saline bolus (20 mL/kg) or rapid push in SAM.
+ */
+export interface ShockResuscitationResult {
+  weight_kg: number;
+  bolusRateMlPerHour: number; // 15 mL/kg/h
+  bolusRateDropsPerMinMicro: number; // microdrip 60 gtt/mL
+  recommendedFluids: string[];
+  monitoringIntervalMinutes: number; // 10 minutes
+  warningSignsOfHeartFailure: string[];
+  reassessmentSteps: {
+    ifImproved: string;
+    ifNotImprovedAfter1Hour: string;
+    ifHeartFailureSigns: string;
+  };
+}
+
+export function calculateShockResuscitation(weight_kg: number): ShockResuscitationResult {
+  const bolusRateMlPerHour = Math.round(weight_kg * 15);
+  // Microdrip (60 drops/mL): rate in mL/h equals drops/min
+  const bolusRateDropsPerMinMicro = bolusRateMlPerHour;
+
+  return {
+    weight_kg,
+    bolusRateMlPerHour,
+    bolusRateDropsPerMinMicro,
+    recommendedFluids: [
+      "Half-strength Darrow's solution with 5% Dextrose (Preferred in GHS & WHO)",
+      "Ringer's Lactate with 5% Dextrose (Alternative if Darrow's unavailable)",
+      "0.45% Saline (Half-Normal Saline) with 5% Dextrose (Second alternative)",
+    ],
+    monitoringIntervalMinutes: 10,
+    warningSignsOfHeartFailure: [
+      'Respiratory rate increases by >= 5 breaths per minute from baseline',
+      'Pulse rate increases by >= 15 beats per minute from baseline',
+      'Development of basal lung crepitations / rales',
+      'Liver enlargement (tender liver margin palpated lower in abdomen)',
+      'Jugular venous distension or acute facial puffiness',
+    ],
+    reassessmentSteps: {
+      ifImproved:
+        'Pulse slows, capillary refill < 3 seconds, extremities warm: STOP IV fluids immediately. Switch to oral or NG ReSoMal at 10 mL/kg/h for up to 10 hours alternating with F-75.',
+      ifNotImprovedAfter1Hour:
+        'Child still in shock: Give second IV infusion of 15 mL/kg over 1 hour. If still unimproved, suspect septic shock or severe anemia; initiate whole blood transfusion (10 mL/kg packed cells over 3 hours) and broad-spectrum IV antibiotics.',
+      ifHeartFailureSigns:
+        'STOP IV infusion immediately! Do not administer further fluids. Administer IV Furosemide (1 mg/kg) if pulmonary edema is present, keep child warm, and elevate head of bed.',
+    },
+  };
+}
+
+/**
+ * Diluted F-100 Formulation for Supplementary Suckling Technique (SST) & Infants <6 Months
+ * Aligned with WHO 2023 Guidelines & 17 September 2026 Implementation Guidance.
+ */
+export interface DilutedF100RecipeResult {
+  dailyVolumeTargetMl: number;
+  preparationInstructions: string;
+  energyKcalPer100ml: number;
+  clinicalObjective: string;
+}
+
+export function calculateDilutedF100Recipe(dailyVolumeTargetMl: number): DilutedF100RecipeResult {
+  return {
+    dailyVolumeTargetMl,
+    preparationInstructions:
+      'Prepare Standard (Milk-based / Non-cereal) F-100, then dilute by adding 30% extra safe water (e.g., take 100 mL of prepared Standard F-100 and add 30 mL clean boiled water to make 130 mL of Diluted F-100; or dissolve 100g F-100 powder in 1,300 mL water instead of 1,000 mL). NOTE: NEVER use Cereal-based F-100 to prepare Diluted F-100 because infants under 6 months cannot enzymatically digest cereal starches.',
+    energyKcalPer100ml: 77,
+    clinicalObjective:
+      'Provides ~77 kcal/100 mL with safe osmolar and renal solute load tailored to immature glomerular filtration in infants <6 months undergoing Supplementary Suckling Technique (SST) or replacement feeding. Formulated exclusively with Standard (non-cereal) milk base.',
   };
 }
 

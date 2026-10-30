@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { WardPatient, DischargeOutcome, calculateWardMilkKitchen } from '../data/wardPatients';
-import { evaluatePatient } from '../utils/clinicalCalculations';
+import { evaluatePatient, F75Type, F100Type } from '../utils/clinicalCalculations';
 import {
   Users,
   Plus,
@@ -84,6 +84,8 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
   const [newHeight, setNewHeight] = useState<number>(65.0);
   const [newEdema, setNewEdema] = useState<'None' | 'Mild/Moderate (+ / ++)' | 'Severe (+++)'>('None');
   const [newPhase, setNewPhase] = useState<'F-75 Stabilization' | 'F-100 Rehabilitation'>('F-75 Stabilization');
+  const [newF75Type, setNewF75Type] = useState<F75Type>('Standard (Milk-based / Non-cereal)');
+  const [newF100Type, setNewF100Type] = useState<F100Type>('Standard (Milk-based / Non-cereal)');
   const [newInterval, setNewInterval] = useState<2 | 3 | 4>(3);
 
   const wardSummary = calculateWardMilkKitchen(patients);
@@ -123,6 +125,8 @@ export const WardOverview: React.FC<WardOverviewProps> = ({
         height_cm: newHeight,
         sex: newSex,
         therapeutic_phase: newPhase,
+        f75_type: newPhase === 'F-75 Stabilization' ? newF75Type : undefined,
+        f100_type: newPhase === 'F-100 Rehabilitation' ? newF100Type : undefined,
         edema_severity: newEdema,
         feeding_interval_hours: newInterval,
         local_milk_source: 'Dried Skimmed Milk Powder',
@@ -251,8 +255,8 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                 {wardSummary.totalF75Ml}
                 <span className="text-xs font-normal text-blue-700 ml-1">mL/day</span>
               </div>
-              <div className="text-xs text-blue-800 mt-1 font-medium">
-                {wardSummary.f75PatientsCount} on F-75
+              <div className="text-[11px] text-blue-800 mt-1 font-medium leading-tight">
+                {wardSummary.f75StandardCount} Non-cereal &middot; {wardSummary.f75CerealCount} Cereal
               </div>
             </div>
 
@@ -262,8 +266,8 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                 {wardSummary.totalF100Ml}
                 <span className="text-xs font-normal text-slate-500 ml-1">mL/day</span>
               </div>
-              <div className="text-xs text-slate-600 mt-1 font-medium">
-                {wardSummary.f100PatientsCount} on F-100
+              <div className="text-[11px] text-slate-600 mt-1 font-medium leading-tight">
+                {wardSummary.f100StandardCount} Non-cereal &middot; {wardSummary.f100CerealCount} Cereal
               </div>
             </div>
 
@@ -440,7 +444,13 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                     {/* Status Metadata */}
                     <div className="flex items-center gap-1.5 mb-3 text-xs text-slate-600 font-medium">
                       <span className="font-bold text-slate-900">
-                        {patient.input.therapeutic_phase.split(' ')[0]}
+                        {patient.input.therapeutic_phase === 'F-75 Stabilization'
+                          ? patient.input.f75_type === 'Cereal-based (Low Osmolality)'
+                            ? 'F-75 (Cereal)'
+                            : 'F-75 (Non-cereal)'
+                          : patient.input.f100_type === 'Cereal-based (Low Osmolality)'
+                          ? 'F-100 (Cereal)'
+                          : 'F-100 (Non-cereal)'}
                       </span>
                       <span aria-hidden="true" className="text-slate-300">&middot;</span>
                       <span className={isHighEdema ? 'text-rose-700 font-bold' : ''}>
@@ -1033,6 +1043,70 @@ Status: Complications resolved, passed 15-min appetite test. Stepped down to Out
                   ))}
                 </div>
               </div>
+
+              {newPhase === 'F-75 Stabilization' && (
+                <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    F-75 Formulation Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        'Standard (Milk-based / Non-cereal)',
+                        'Cereal-based (Low Osmolality)',
+                      ] as F75Type[]
+                    ).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setNewF75Type(type)}
+                        className={`p-2 rounded-lg border text-xs font-semibold text-left transition-all ${
+                          newF75Type === type
+                            ? 'bg-white border-blue-600 text-blue-900 font-bold shadow-xs'
+                            : 'bg-white/70 border-slate-200 text-slate-700 hover:bg-white'
+                        }`}
+                      >
+                        <div>{type === 'Standard (Milk-based / Non-cereal)' ? 'Standard (Non-cereal)' : 'Cereal-based'}</div>
+                        <div className="text-[10px] text-slate-500 font-normal">
+                          {type === 'Standard (Milk-based / Non-cereal)' ? '~333 mOsm/kg' : '~280 mOsm/kg (Low Osm)'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {newPhase === 'F-100 Rehabilitation' && (
+                <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    F-100 Formulation Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        'Standard (Milk-based / Non-cereal)',
+                        'Cereal-based (Low Osmolality)',
+                      ] as F100Type[]
+                    ).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setNewF100Type(type)}
+                        className={`p-2 rounded-lg border text-xs font-semibold text-left transition-all ${
+                          newF100Type === type
+                            ? 'bg-white border-blue-600 text-blue-900 font-bold shadow-xs'
+                            : 'bg-white/70 border-slate-200 text-slate-700 hover:bg-white'
+                        }`}
+                      >
+                        <div>{type === 'Standard (Milk-based / Non-cereal)' ? 'Standard (Non-cereal)' : 'Cereal-based'}</div>
+                        <div className="text-[10px] text-slate-500 font-normal">
+                          {type === 'Standard (Milk-based / Non-cereal)' ? '~419 mOsm/kg' : '~300 mOsm/kg (Low Osm)'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">

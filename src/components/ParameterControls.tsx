@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   CalculationInput,
   TherapeuticPhase,
+  F75Type,
+  F100Type,
   EdemaSeverity,
   FeedingInterval,
   LocalMilkSource,
@@ -12,13 +14,19 @@ import {
   Minus,
   Plus,
   AlertCircle,
+  AlertTriangle,
   Sparkles,
   ChevronDown,
   ChevronUp,
   Milk,
   Layers,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react';
 import { ClinicalNumberInput } from './ClinicalNumberInput';
+import { auditClinicalSafety, ClinicalSafetyIssue } from '../utils/clinicalSafetyAuditor';
+import { ClinicalSafetyBadge } from './ClinicalSafetyBadge';
+import { ClinicalSafetyInspectorModal } from './ClinicalSafetyInspectorModal';
 
 interface ParameterControlsProps {
   input: CalculationInput;
@@ -35,6 +43,10 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
 }) => {
   const [presetsExpanded, setPresetsExpanded] = useState<boolean>(false);
   const [milkSettingsExpanded, setMilkSettingsExpanded] = useState<boolean>(false);
+  const [showSafetyModal, setShowSafetyModal] = useState<boolean>(false);
+
+  // Compute live safety audit against WHO 2023 guidelines
+  const auditResult = useMemo(() => auditClinicalSafety(input), [input]);
 
   const update = <K extends keyof CalculationInput>(field: K, val: CalculationInput[K]) => {
     onChange({
@@ -83,26 +95,99 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
 
   return (
     <div className="card-depth rounded-2xl p-4 sm:p-5 space-y-5 bg-white">
-      {/* Header bar: Title & Reset Button */}
+      {/* Header bar: Title, Safety Badge, & Reset Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            Clinical Parameters
-          </h2>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Clinical Parameters
+            </h2>
+            <ClinicalSafetyBadge
+              auditResult={auditResult}
+              onClick={() => setShowSafetyModal(true)}
+              variant="full"
+            />
+          </div>
           <div className="text-xs text-slate-500 mt-0.5">
             Anthropometric inputs and therapeutic feeding regimen
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onReset}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 hover:text-slate-950 transition-all py-2 px-3.5 rounded-xl stepper-tactile min-h-[44px] self-start sm:self-auto"
-        >
-          <RefreshCw className="w-4 h-4 text-slate-600" />
-          <span>Reset</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={onReset}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 hover:text-slate-950 transition-all py-2 px-3.5 rounded-xl stepper-tactile min-h-[44px]"
+          >
+            <RefreshCw className="w-4 h-4 text-slate-600" />
+            <span>Reset</span>
+          </button>
+        </div>
       </div>
+
+      {/* Prominent Safety Interlock or Caution Alert Banner */}
+      {auditResult.severity !== 'ALL_CLEAR' && (
+        <div
+          className={`p-4 rounded-2xl border transition-all ${
+            auditResult.criticalCount > 0
+              ? 'bg-rose-50 border-rose-300 text-rose-950 shadow-xs'
+              : 'bg-amber-50 border-amber-300 text-amber-950 shadow-xs'
+          }`}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <div
+                className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5 text-white ${
+                  auditResult.criticalCount > 0 ? 'bg-rose-600' : 'bg-amber-600'
+                }`}
+              >
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded tracking-wider ${
+                      auditResult.criticalCount > 0
+                        ? 'bg-rose-200 text-rose-900'
+                        : 'bg-amber-200 text-amber-900'
+                    }`}
+                  >
+                    {auditResult.criticalCount > 0 ? 'Safety Interlock Active' : 'Clinical Caution'}
+                  </span>
+                  <span className="text-xs font-bold">
+                    {auditResult.issues[0]?.title}
+                  </span>
+                </div>
+                <p className="text-xs mt-1 text-slate-700 leading-relaxed">
+                  {auditResult.issues[0]?.summary}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              {auditResult.issues[0]?.autoFixAvailable &&
+                auditResult.issues[0]?.autoFixPatch && (
+                  <button
+                    type="button"
+                    onClick={() => applyPreset(auditResult.issues[0].autoFixPatch!)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-xl transition-all shadow-xs min-h-[38px]"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>{auditResult.issues[0].autoFixAction || 'Auto-Fix'}</span>
+                  </button>
+                )}
+
+              <button
+                type="button"
+                onClick={() => setShowSafetyModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-all min-h-[38px]"
+              >
+                <span>Inspect Guardrails</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Accordion 1: Quick Clinical Presets (Collapsible to prevent scroll fatigue) */}
       {showQuickPresets && (
@@ -614,22 +699,45 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
           <div className="space-y-1.5">
             {(['F-75 Stabilization', 'F-100 Rehabilitation'] as TherapeuticPhase[]).map((p) => {
               const isSelected = input.therapeutic_phase === p;
+              const isF100 = p === 'F-100 Rehabilitation';
+              const hasSevereEdema = input.edema_severity === 'Severe (+++)';
+              const isUnder6m = input.age_months !== undefined && input.age_months < 6;
+              const isF100Contraindicated = isF100 && (hasSevereEdema || isUnder6m);
+
               return (
                 <button
                   key={p}
                   type="button"
                   onClick={() => update('therapeutic_phase', p)}
                   className={`w-full p-2.5 rounded-xl text-left text-xs border transition-all min-h-[44px] flex flex-col justify-center ${
-                    isSelected
+                    isF100Contraindicated
+                      ? 'bg-rose-50/70 border-rose-300 text-rose-950 hover:bg-rose-100/70'
+                      : isSelected
                       ? 'bg-blue-50 border-blue-600 text-blue-900 font-bold shadow-xs'
                       : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  <div className="font-bold">{p}</div>
-                  <div className="text-[11px] text-slate-500 font-normal">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-bold">{p}</span>
+                    {isF100 && hasSevereEdema && (
+                      <span className="text-[9px] font-extrabold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded uppercase">
+                        Contraindicated
+                      </span>
+                    )}
+                    {isF100 && !hasSevereEdema && isUnder6m && (
+                      <span className="text-[9px] font-extrabold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded uppercase">
+                        &lt; 6m: Use Diluted / SST
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-normal mt-0.5">
                     {p === 'F-75 Stabilization'
-                      ? '75 kcal / 100 mL'
-                      : '100 kcal / 100 mL'}
+                      ? '75 kcal / 100 mL (Low sodium & protein)'
+                      : hasSevereEdema
+                      ? 'Strictly contraindicated in severe edema (heart failure risk)'
+                      : isUnder6m
+                      ? 'Undiluted standard F-100 contraindicated: use Diluted F-100 / EBM via SST per WHO Sept 2026 Guidance'
+                      : '100 kcal / 100 mL (Catch-up growth)'}
                   </div>
                 </button>
               );
@@ -667,6 +775,152 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
           </div>
         </div>
       </div>
+
+      {/* F-75 Dual Formulation Selector (Standard Non-Cereal vs. Cereal-Based Low Osmolality) */}
+      {input.therapeutic_phase === 'F-75 Stabilization' && (
+        <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-blue-700" />
+              <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                F-75 Formulation Type (WHO Inpatient Protocols)
+              </label>
+            </div>
+            <span className="text-[11px] text-blue-800 font-medium">
+              Choose based on diarrhea status &amp; osmotic load
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {(
+              [
+                'Standard (Milk-based / Non-cereal)',
+                'Cereal-based (Low Osmolality)',
+              ] as F75Type[]
+            ).map((type) => {
+              const currentType = input.f75_type || 'Standard (Milk-based / Non-cereal)';
+              const isSelected = currentType === type;
+              const isCereal = type === 'Cereal-based (Low Osmolality)';
+              const isUnder6m = input.age_months !== undefined && input.age_months < 6;
+              const isContraindicated = isCereal && isUnder6m;
+
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => update('f75_type', type)}
+                  className={`p-3 rounded-xl text-left border transition-all min-h-[58px] flex flex-col justify-between ${
+                    isContraindicated
+                      ? 'bg-rose-50/80 border-rose-300 text-rose-950 hover:bg-rose-100/70'
+                      : isSelected
+                      ? 'bg-white border-blue-600 text-blue-950 font-bold shadow-xs ring-2 ring-blue-600/30'
+                      : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="text-xs font-bold text-slate-900">{type}</span>
+                    {isCereal ? (
+                      <span className="text-[10px] font-extrabold text-teal-800 bg-teal-100 px-1.5 py-0.5 rounded">
+                        ~280 mOsm/kg
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-extrabold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                        ~333 mOsm/kg
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-600 font-normal mt-1 leading-snug">
+                    {isCereal ? (
+                      isUnder6m ? (
+                        <span className="text-rose-700 font-bold">
+                          CONTRAINDICATED in infants &lt;6m (immature pancreatic amylase).
+                        </span>
+                      ) : (
+                        'Cooked cereal flour (35g/L) + reduced sugar (35g/L). Indicated for severe osmotic diarrhea / watery stools.'
+                      )
+                    ) : (
+                      'Routine stabilization formula (no cereal flour). Dissolve in warm safe water without boiling. (Safe for infants <6m).'
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* F-100 Dual Formulation Selector (Standard Non-Cereal vs. Cereal-Based Low Osmolality) */}
+      {input.therapeutic_phase === 'F-100 Rehabilitation' && (
+        <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-blue-700" />
+              <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                F-100 Formulation Type (WHO IMAM Standards)
+              </label>
+            </div>
+            <span className="text-[11px] text-blue-800 font-medium">
+              Choose based on diarrhea status &amp; osmotic load
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {(
+              [
+                'Standard (Milk-based / Non-cereal)',
+                'Cereal-based (Low Osmolality)',
+              ] as F100Type[]
+            ).map((type) => {
+              const currentType = input.f100_type || 'Standard (Milk-based / Non-cereal)';
+              const isSelected = currentType === type;
+              const isCereal = type === 'Cereal-based (Low Osmolality)';
+              const isUnder6m = input.age_months !== undefined && input.age_months < 6;
+              const isContraindicated = isCereal && isUnder6m;
+
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => update('f100_type', type)}
+                  className={`p-3 rounded-xl text-left border transition-all min-h-[58px] flex flex-col justify-between ${
+                    isContraindicated
+                      ? 'bg-rose-50/80 border-rose-300 text-rose-950 hover:bg-rose-100/70'
+                      : isSelected
+                      ? 'bg-white border-blue-600 text-blue-950 font-bold shadow-xs ring-2 ring-blue-600/30'
+                      : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="text-xs font-bold text-slate-900">{type}</span>
+                    {isCereal ? (
+                      <span className="text-[10px] font-extrabold text-teal-800 bg-teal-100 px-1.5 py-0.5 rounded">
+                        ~300 mOsm/kg
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-extrabold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                        ~419 mOsm/kg
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-600 font-normal mt-1 leading-snug">
+                    {isCereal ? (
+                      isUnder6m ? (
+                        <span className="text-rose-700 font-bold">
+                          CONTRAINDICATED in infants &lt;6m (immature pancreatic amylase).
+                        </span>
+                      ) : (
+                        'Cooked cereal flour (35g/L) + reduced sugar (25g/L). Indicated for osmotic diarrhea / watery stools.'
+                      )
+                    ) : (
+                      'Routine milk catch-up formula (no cereal flour). Whisk with warm safe water without boiling. (Used for Diluted F-100).'
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Accordion 2: Local Milk Formula & Batch Recipe Settings (Collapsible to prevent scroll fatigue) */}
       <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/60 pt-1">
@@ -726,6 +980,16 @@ export const ParameterControls: React.FC<ParameterControlsProps> = ({
           </div>
         )}
       </div>
+
+      {/* Interactive Clinical Safety & Guardrail Inspector Modal */}
+      <ClinicalSafetyInspectorModal
+        isOpen={showSafetyModal}
+        onClose={() => setShowSafetyModal(false)}
+        auditResult={auditResult}
+        onApplyPatch={applyPreset}
+        patientName={input.patient_name}
+        cotNumber={input.cot_number}
+      />
     </div>
   );
 };

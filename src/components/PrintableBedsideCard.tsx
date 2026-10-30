@@ -255,10 +255,16 @@ Directive: ${evaluation.clinicalDirective.directiveText}`;
                             className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                               p.input.therapeutic_phase === 'F-75 Stabilization'
                                 ? 'bg-blue-100 text-blue-800'
+                                : p.input.f100_type === 'Cereal-based (Low Osmolality)'
+                                ? 'bg-teal-100 text-teal-800'
                                 : 'bg-emerald-100 text-emerald-800'
                             }`}
                           >
-                            {p.input.therapeutic_phase.split(' ')[0]}
+                            {p.input.therapeutic_phase === 'F-75 Stabilization'
+                              ? 'F-75'
+                              : p.input.f100_type === 'Cereal-based (Low Osmolality)'
+                              ? 'F-100 (Cereal)'
+                              : 'F-100 (Non-cereal)'}
                           </span>
                         </td>
                         <td className="p-2 border border-slate-300 text-right font-bold text-blue-900">
@@ -398,7 +404,10 @@ const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
       {/* Prescribed Feeding Regimen */}
       <div className="border-2 border-blue-900 bg-blue-50/40 p-4 rounded-xl">
         <div className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">
-          WHO Protocol Target Regimen ({input.therapeutic_phase})
+          WHO Protocol Target Regimen ({input.therapeutic_phase}
+          {input.therapeutic_phase === 'F-100 Rehabilitation'
+            ? ` · ${recipe?.formulaCategory || 'Standard (Non-cereal)'}`
+            : ''})
         </div>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="p-3 bg-white rounded-lg border border-blue-200">
@@ -434,8 +443,13 @@ const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
       {/* Batch Recipe */}
       {recipe && !safety.rule2FluidOverloadHalted && (
         <div className="border border-slate-300 p-3.5 rounded-lg text-xs space-y-2">
-          <div className="font-bold text-slate-900">
-            Manual 24-Hour Batch Recipe ({recipe.dailyVolume} mL total)
+          <div className="flex items-center justify-between font-bold text-slate-900">
+            <span>
+              Manual 24-Hour Batch Recipe: {recipe.formulaCategory} ({recipe.dailyVolume} mL total)
+            </span>
+            <span className="text-[11px] font-semibold text-slate-600">
+              ~{recipe.estimatedOsmolalityMOsmKg} mOsm/kg
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-slate-700">
             <div>
@@ -451,7 +465,12 @@ const SinglePatientCard: React.FC<SinglePatientCardProps> = ({
               3. Vegetable Oil: <strong>{recipe.vegetableOilGrams} g</strong>
             </div>
             <div>
-              4. Cereal Flour: <strong>{recipe.cerealFlourGrams} g</strong>
+              4. Cereal Flour:{' '}
+              <strong>
+                {recipe.cerealFlourGrams > 0
+                  ? `${recipe.cerealFlourGrams} g (Cooked)`
+                  : '0 g (None · Non-cereal)'}
+              </strong>
             </div>
             <div className="col-span-2">
               5. CMV Solution: <strong>{recipe.cmvLiquidMl} mL</strong> (liquid mineral mix, 20 mL/L)

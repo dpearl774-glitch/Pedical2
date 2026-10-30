@@ -68,6 +68,7 @@ export const INITIAL_WARD_PATIENTS: WardPatient[] = [
       height_cm: 63.0,
       sex: 'Girl',
       therapeutic_phase: 'F-75 Stabilization',
+      f75_type: 'Standard (Milk-based / Non-cereal)',
       edema_severity: 'Severe (+++)',
       feeding_interval_hours: 2,
       local_milk_source: 'Dried Skimmed Milk Powder',
@@ -79,7 +80,7 @@ export const INITIAL_WARD_PATIENTS: WardPatient[] = [
     name: 'Cot 02 (S.O.)',
     mrn: 'Ref-102',
     admissionDate: '2026-10-19',
-    notes: 'Severe wasting (WHZ < -3 SD), eager feeder, good appetite',
+    notes: 'Severe wasting (WHZ < -3 SD), persistent osmotic diarrhea; prescribed Cereal-based F-75 (low osmolality ~280 mOsm/kg)',
     input: {
       patient_id: 'cot-2',
       cot_number: 'Cot 02',
@@ -91,6 +92,7 @@ export const INITIAL_WARD_PATIENTS: WardPatient[] = [
       height_cm: 68.0,
       sex: 'Boy',
       therapeutic_phase: 'F-75 Stabilization',
+      f75_type: 'Cereal-based (Low Osmolality)',
       edema_severity: 'None',
       feeding_interval_hours: 3,
       local_milk_source: 'Dried Skimmed Milk Powder',
@@ -114,6 +116,7 @@ export const INITIAL_WARD_PATIENTS: WardPatient[] = [
       height_cm: 76.5,
       sex: 'Boy',
       therapeutic_phase: 'F-100 Rehabilitation',
+      f100_type: 'Standard (Milk-based / Non-cereal)',
       edema_severity: 'None',
       feeding_interval_hours: 3,
       local_milk_source: 'Fresh Cow / UHT Milk',
@@ -137,6 +140,7 @@ export const INITIAL_WARD_PATIENTS: WardPatient[] = [
       height_cm: 66.0,
       sex: 'Girl',
       therapeutic_phase: 'F-75 Stabilization',
+      f75_type: 'Standard (Milk-based / Non-cereal)',
       edema_severity: 'Mild/Moderate (+ / ++)',
       feeding_interval_hours: 3,
       local_milk_source: 'Dried Whole Milk Powder',
@@ -160,6 +164,7 @@ export const INITIAL_WARD_PATIENTS: WardPatient[] = [
       height_cm: 82.0,
       sex: 'Boy',
       therapeutic_phase: 'F-100 Rehabilitation',
+      f100_type: 'Cereal-based (Low Osmolality)',
       edema_severity: 'None',
       feeding_interval_hours: 4,
       local_milk_source: 'Dried Skimmed Milk Powder',
@@ -169,10 +174,18 @@ export const INITIAL_WARD_PATIENTS: WardPatient[] = [
 
 export interface WardMilkKitchenSummary {
   totalF75Ml: number;
+  totalF75StandardMl: number;
+  totalF75CerealMl: number;
   totalF100Ml: number;
+  totalF100StandardMl: number;
+  totalF100CerealMl: number;
   totalPatientsCount: number;
   f75PatientsCount: number;
+  f75StandardCount: number;
+  f75CerealCount: number;
   f100PatientsCount: number;
+  f100StandardCount: number;
+  f100CerealCount: number;
   totalCmvSolutionMl: number;
   totalSugarGrams: number;
   totalOilGrams: number;
@@ -185,9 +198,17 @@ export interface WardMilkKitchenSummary {
  */
 export function calculateWardMilkKitchen(patients: WardPatient[]): WardMilkKitchenSummary {
   let totalF75Ml = 0;
+  let totalF75StandardMl = 0;
+  let totalF75CerealMl = 0;
   let totalF100Ml = 0;
+  let totalF100StandardMl = 0;
+  let totalF100CerealMl = 0;
   let f75PatientsCount = 0;
+  let f75StandardCount = 0;
+  let f75CerealCount = 0;
   let f100PatientsCount = 0;
+  let f100StandardCount = 0;
+  let f100CerealCount = 0;
 
   let totalCmvSolutionMl = 0;
   let totalSugarGrams = 0;
@@ -204,9 +225,23 @@ export function calculateWardMilkKitchen(patients: WardPatient[]): WardMilkKitch
     if (patient.input.therapeutic_phase === 'F-75 Stabilization') {
       totalF75Ml += dailyMl;
       f75PatientsCount++;
+      if (patient.input.f75_type === 'Cereal-based (Low Osmolality)') {
+        totalF75CerealMl += dailyMl;
+        f75CerealCount++;
+      } else {
+        totalF75StandardMl += dailyMl;
+        f75StandardCount++;
+      }
     } else {
       totalF100Ml += dailyMl;
       f100PatientsCount++;
+      if (patient.input.f100_type === 'Cereal-based (Low Osmolality)') {
+        totalF100CerealMl += dailyMl;
+        f100CerealCount++;
+      } else {
+        totalF100StandardMl += dailyMl;
+        f100StandardCount++;
+      }
     }
 
     if (evalRes.recipe) {
@@ -222,10 +257,18 @@ export function calculateWardMilkKitchen(patients: WardPatient[]): WardMilkKitch
 
   return {
     totalF75Ml,
+    totalF75StandardMl,
+    totalF75CerealMl,
     totalF100Ml,
+    totalF100StandardMl,
+    totalF100CerealMl,
     totalPatientsCount: patients.length,
     f75PatientsCount,
+    f75StandardCount,
+    f75CerealCount,
     f100PatientsCount,
+    f100StandardCount,
+    f100CerealCount,
     totalCmvSolutionMl: Number(totalCmvSolutionMl.toFixed(1)),
     totalSugarGrams: Number(totalSugarGrams.toFixed(1)),
     totalOilGrams: Number(totalOilGrams.toFixed(1)),

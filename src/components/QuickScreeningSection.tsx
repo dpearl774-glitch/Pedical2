@@ -256,16 +256,16 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
         if (isSamZScore) triggers.push(`WHZ < -3 SD (${wflZScore} SD, cutoff ${thresholds.sd3neg} kg)`);
 
         if (isSevereEdema) {
-          action = 'Urgent Inpatient Admission: Severe edema in infant < 6m. Admit for stabilization with F-75. RUTF is contraindicated.';
+          action = 'Urgent Inpatient Admission: Severe edema in infant < 6m. Inpatient Phase 1 stabilization with F-75 / Diluted F-100 and fluid restriction (100 mL/kg/day). Solid RUTF and standard F-100 are strictly contraindicated.';
         } else if (isEdematous) {
-          action = 'Inpatient Referral: Bilateral edema in infant < 6m requires inpatient stabilization and skilled lactation support.';
+          action = 'Inpatient Admission: Bilateral edema in infant < 6m requires inpatient stabilization with F-75 or Diluted F-100/EBM and skilled lactation support per WHO Sept 2026 Guidance.';
         } else {
-          action = 'Severe wasting in infant < 6m: Admit to inpatient if complicated or failing to feed. Provide skilled lactation support.';
+          action = 'Severe wasting in infant < 6m (WHO Sept 2026 Guidance): Assess breastfeeding and clinical stability. If breastfed, initiate Supplementary Suckling Technique (SST) with EBM or Diluted F-100. If non-breastfed, use infant formula or Diluted F-100. Admit if lethargic or failing to suckle.';
         }
       } else if (isMamZScore) {
         classification = 'MAM';
         triggers.push(`WHZ between -3 and -2 SD (${wflZScore} SD) in infant < 6m`);
-        action = 'Moderate acute malnutrition in infant < 6m: Provide skilled breastfeeding assessment and monitor weekly. RUTF is contraindicated.';
+        action = 'Moderate acute malnutrition in infant < 6m (WHO Sept 2026 Guidance): Skilled lactation counseling, support frequent suckling, and monitor weight weekly. Standard RUTF is contraindicated.';
       } else {
         triggers.push(`WHZ ≥ -2 SD (${wflZScore} SD)`);
         action = 'Adequate nutrition status for infant < 6m. Support exclusive breastfeeding.';
@@ -961,25 +961,34 @@ export const QuickScreeningSection: React.FC<QuickScreeningSectionProps> = ({
                       )}
 
                       {ageMonths >= 6 && onSendToOutpatient && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            onSendToOutpatient({
-                              weightKg,
-                              ageMonths,
-                              heightCm,
-                              muacMm,
-                              headCircumferenceCm,
-                              edema,
-                              code: nextChildCode,
-                              name: childName.trim() ? childName.trim() : `Child ${nextChildCode}`,
-                            })
-                          }
-                          className="w-full py-2.5 px-3.5 bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 border border-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-between min-h-[42px]"
-                        >
-                          <span>Open in Outpatient OTP</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
+                        edema === 'Grade +++ (Severe)' ? (
+                          <div className="w-full py-2 px-3 rounded-xl bg-rose-100/90 border border-rose-300 text-rose-900 text-xs font-semibold flex items-center justify-between">
+                            <span>Severe Edema (+++): Outpatient RUTF Contraindicated</span>
+                            <span className="text-[10px] uppercase font-extrabold bg-rose-200 text-rose-900 px-1.5 py-0.5 rounded">
+                              Inpatient Only
+                            </span>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onSendToOutpatient({
+                                weightKg,
+                                ageMonths,
+                                heightCm,
+                                muacMm,
+                                headCircumferenceCm,
+                                edema,
+                                code: nextChildCode,
+                                name: childName.trim() ? childName.trim() : `Child ${nextChildCode}`,
+                              })
+                            }
+                            className="w-full py-2.5 px-3.5 bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 border border-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-between min-h-[42px]"
+                          >
+                            <span>Open in Outpatient OTP (Must Pass Appetite Test)</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        )
                       )}
                     </div>
                   </div>

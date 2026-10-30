@@ -63,15 +63,17 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
     if (safety.rule2FluidOverloadHalted) {
       report += `${safety.rule2ErrorText}\n\n`;
     } else if (recipe) {
-      report += `Manual 24-Hour Batch Recipe\n`;
+      report += `Manual 24-Hour Batch Recipe (${recipe.formulaCategory})\n`;
+      report += `Osmolality: ~${recipe.estimatedOsmolalityMOsmKg} mOsm/kg | Energy: ${recipe.energyKcalPer100ml} kcal/100 mL\n`;
       report += `To prepare exactly ${recipe.dailyVolume} mL of therapeutic milk, combine:\n`;
       report += `1. Milk Base: ${recipe.milkBase.amount} ${recipe.milkBase.unit} (${recipe.milkBase.name})\n`;
       report += `2. Sugar: ${recipe.sugarGrams} g\n`;
       report += `3. Vegetable Oil: ${recipe.vegetableOilGrams} g\n`;
-      report += `4. Cereal Flour: ${recipe.cerealFlourGrams} g\n`;
+      report += `4. Cereal Flour: ${recipe.cerealFlourGrams} g ${recipe.cerealFlourGrams === 0 ? '(Non-cereal formulation)' : '(Cooked cereal flour)'}\n`;
       report += `5. CMV Solution: ${recipe.cmvLiquidMl} mL (liquid Combined Mineral Vitamin solution)\n`;
       report += `(Top up with warm, pre-boiled water until final solution hits exactly the ${recipe.dailyVolume} mL mark).\n\n`;
       report += `Preparation Step:\n${recipe.preparationStep}\n\n`;
+      report += `Clinical Indication Note:\n${recipe.clinicalIndicationNote}\n\n`;
     }
 
     report += `Clinical Directive\n`;
@@ -515,11 +517,22 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
               className="flex-1 flex items-center justify-between text-left group min-h-[40px]"
             >
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-700 transition-colors">
-                  24h Kitchen Batch Recipe
-                </h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-700 transition-colors">
+                    24h Kitchen Batch Recipe
+                  </h3>
+                  <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                    recipe.formulaCategory.includes('Cereal-based')
+                      ? 'bg-teal-50 text-teal-800 border-teal-200'
+                      : recipe.formulaCategory.includes('Standard')
+                      ? 'bg-blue-50 text-blue-800 border-blue-200'
+                      : 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                  }`}>
+                    {recipe.formulaCategory}
+                  </span>
+                </div>
                 <div className="text-xs text-slate-500 mt-0.5">
-                  {recipe.dailyVolume} mL &middot; scale factor {recipe.scaleFactor} &middot; {recipe.milkBase.name}
+                  {recipe.dailyVolume} mL &middot; scale factor {recipe.scaleFactor} &middot; {recipe.milkBase.name} &middot; ~{recipe.estimatedOsmolalityMOsmKg} mOsm/kg
                 </div>
               </div>
 
@@ -558,7 +571,13 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
                   <div>
                     <div className="text-xs font-semibold text-slate-700">2. Sugar</div>
-                    <div className="text-xs text-slate-900 font-medium">Commercial White Sugar</div>
+                    <div className="text-xs text-slate-900 font-medium">
+                      {recipe.formulaCategory.includes('Cereal-based')
+                        ? recipe.formulaCategory.includes('F-75')
+                          ? 'White Sugar (Reduced 35g/L)'
+                          : 'White Sugar (Reduced 25g/L)'
+                        : 'Commercial White Sugar'}
+                    </div>
                   </div>
                   <div className="text-right">
                     <span className="text-xl font-bold text-slate-900">{recipe.sugarGrams}</span>
@@ -581,7 +600,9 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
                   <div>
                     <div className="text-xs font-semibold text-slate-700">4. Cereal Flour</div>
                     <div className="text-xs text-slate-900 font-medium">
-                      {recipe.cerealFlourGrams > 0 ? 'Milled rice / cereal flour' : 'None (0g for F-100)'}
+                      {recipe.cerealFlourGrams > 0
+                        ? 'Cooked rice / maize flour (boiled 4–5 min)'
+                        : 'None (0g · Non-cereal formulation)'}
                     </div>
                   </div>
                   <div className="text-right">
@@ -618,6 +639,16 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
                 </div>
               </div>
 
+              {/* Clinical Indication & Rationale Callout */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                  Clinical Directive &amp; Osmolar Rationale:
+                </div>
+                <p className="text-slate-700 leading-relaxed">
+                  {recipe.clinicalIndicationNote}
+                </p>
+              </div>
+
               {/* Caloric & Osmolar Profile strip */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-100 text-xs">
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
@@ -641,7 +672,7 @@ export const FormattedClinicalReport: React.FC<FormattedClinicalReportProps> = (
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
                   <span className="text-[11px] text-slate-500 font-medium">Osmolality:</span>
                   <div className="font-bold text-slate-900 mt-0.5">
-                    {input.therapeutic_phase === 'F-75 Stabilization' ? '~330 mOsm/kg' : '~415 mOsm/kg'}
+                    ~{recipe.estimatedOsmolalityMOsmKg} mOsm/kg
                   </div>
                 </div>
               </div>

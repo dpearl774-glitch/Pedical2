@@ -20,6 +20,7 @@ import { ProtocolReferenceSection } from './components/ProtocolReferenceSection'
 import { PrintableBedsideCard } from './components/PrintableBedsideCard';
 import { WardOverview } from './components/WardOverview';
 import { ClinicalDisclaimerModal } from './components/ClinicalDisclaimerModal';
+import { ClinicalLockoutScreen } from './components/ClinicalLockoutScreen';
 import { OutpatientManagementSection } from './components/OutpatientManagementSection';
 import { QuickScreeningSection } from './components/QuickScreeningSection';
 import { ReSoMalManagementSection } from './components/ReSoMalManagementSection';
@@ -35,7 +36,10 @@ import {
   saveFeedingLogToIDB,
   migrateLocalStorageToIndexedDB,
 } from './utils/indexedDBStorage';
-import { Printer, ChevronRight, User, ShieldCheck, Lock, HeartHandshake, Activity, Droplets, Bed, Plus } from 'lucide-react';
+import { auditClinicalSafety, ClinicalSafetyAuditResult } from './utils/clinicalSafetyAuditor';
+import { ClinicalSafetyInspectorModal } from './components/ClinicalSafetyInspectorModal';
+import { LegalAndPrivacyModal, LegalModalTab } from './components/LegalAndPrivacyModal';
+import { Printer, ChevronRight, User, ShieldCheck, Lock, HeartHandshake, Activity, Droplets, Bed, Plus, Mail, FileText } from 'lucide-react';
 
 const STORAGE_KEY = 'pedical_ward_inpatients_v3';
 const DISCLAIMER_STORAGE_KEY = 'pedical_disclaimer_accepted_v1';
@@ -156,15 +160,30 @@ export default function App() {
     window.location.reload();
   };
 
-  // Disclaimer state
-  const [showDisclaimerModal, setShowDisclaimerModal] = useState<boolean>(() => {
+  // Disclaimer state & mandatory legal safety gate
+  const [hasAcceptedDisclaimer, setHasAcceptedDisclaimer] = useState<boolean>(() => {
     try {
-      return !localStorage.getItem(DISCLAIMER_STORAGE_KEY);
+      return localStorage.getItem(DISCLAIMER_STORAGE_KEY) === 'true';
     } catch {
       return false;
     }
   });
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(DISCLAIMER_STORAGE_KEY) !== 'true';
+    } catch {
+      return true;
+    }
+  });
+  const [disclaimerDeclined, setDisclaimerDeclined] = useState<boolean>(false);
   const [isVoluntaryDisclaimerReview, setIsVoluntaryDisclaimerReview] = useState<boolean>(false);
+  const [showLegalModal, setShowLegalModal] = useState<boolean>(false);
+  const [legalModalTab, setLegalModalTab] = useState<LegalModalTab>('terms');
+
+  const handleOpenLegal = (tab: LegalModalTab = 'terms') => {
+    setLegalModalTab(tab);
+    setShowLegalModal(true);
+  };
 
   // Ward Patients Roster State (Safely supports 0 patients)
   const [patients, setPatients] = useState<WardPatient[]>(() => {
@@ -245,16 +264,42 @@ export default function App() {
   const handleAcceptDisclaimer = () => {
     try {
       localStorage.setItem(DISCLAIMER_STORAGE_KEY, 'true');
+      localStorage.setItem(
+        'pedical_clinical_agreement_v1',
+        JSON.stringify({
+          accepted: true,
+          timestamp: Date.now(),
+          healthProfessionalConfirmed: true,
+          termsAndPrivacyAgreed: true,
+          contactEmail: 'balancdvisuals@gmail.com',
+          guidelineVersion: 'WHO 2023 & 17 Sept 2026 Guidance; GHS IMAM',
+        })
+      );
     } catch {
       // Ignore
     }
+    setHasAcceptedDisclaimer(true);
     setShowDisclaimerModal(false);
+    setDisclaimerDeclined(false);
     setIsVoluntaryDisclaimerReview(false);
+  };
+
+  const handleDeclineDisclaimer = () => {
+    setShowDisclaimerModal(false);
+    setDisclaimerDeclined(true);
   };
 
   const handleOpenDisclaimer = () => {
     setIsVoluntaryDisclaimerReview(true);
     setShowDisclaimerModal(true);
+  };
+
+  const handlePinReset = (newPin: string) => {
+    setSettings((prev) => {
+      const updated = { ...prev, pinCode: newPin };
+      saveAppSettings(updated);
+      return updated;
+    });
   };
 
   const handleSaveSettings = (updated: AppSettings) => {
@@ -265,11 +310,19 @@ export default function App() {
     }
   };
 
+  const [showSafetyInspector, setShowSafetyInspector] = useState<boolean>(false);
+
   // Instant deterministic calculation for active patient (undefined when ward has zero patients)
   const evaluation = useMemo(() => {
     if (!input) return undefined;
     return evaluatePatient(input);
   }, [input]);
+
+  // Live WHO/GHS Clinical Safety Audit
+  const safetyAudit = useMemo(() => {
+    if (!input) return undefined;
+    return auditClinicalSafety(input, evaluation);
+  }, [input, evaluation]);
 
   // Update input for active patient
   const handleUpdateInput = (newInput: CalculationInput) => {
@@ -288,6 +341,14 @@ export default function App() {
         return p;
       })
     );
+  };
+
+  const handleApplySafetyPatch = (patch: Partial<CalculationInput>) => {
+    if (!input) return;
+    handleUpdateInput({
+      ...input,
+      ...patch,
+    });
   };
 
   const handleResetActivePatient = () => {
@@ -518,6 +579,36 @@ export default function App() {
     </div>
   );
 
+  // Mandatory Clinical Disclaimer Enforcement & Lockout State Gate
+  if (!hasAcceptedDisclaimer) {
+    return (
+      <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col font-sans antialiased">
+        {disclaimerDeclined && !showDisclaimerModal ? (
+          <ClinicalLockoutScreen
+            onReviewTerms={() => {
+              setDisclaimerDeclined(false);
+              setShowDisclaimerModal(true);
+            }}
+            onResetSession={handleEmergencyWipe}
+          />
+        ) : (
+          <>
+            <ClinicalLockoutScreen
+              onReviewTerms={() => setShowDisclaimerModal(true)}
+              onResetSession={handleEmergencyWipe}
+            />
+            <ClinicalDisclaimerModal
+              isOpen={true}
+              onAccept={handleAcceptDisclaimer}
+              onDecline={handleDeclineDisclaimer}
+              isVoluntaryReview={false}
+            />
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden text-slate-900 flex flex-col font-sans antialiased pb-20 lg:pb-8">
       {/* Top Header with Interactive Patient Switcher & Notice */}
@@ -541,6 +632,8 @@ export default function App() {
         onOpenReminders={() => setShowRemindersModal(true)}
         pinLockEnabled={settings.pinLockEnabled}
         onLockScreen={() => setLockState(true)}
+        auditResult={safetyAudit}
+        onOpenSafetyInspector={() => setShowSafetyInspector(true)}
       />
 
       {/* Top Slide-Down Alert Banner for Due/Overdue SAM/MAM Reminders */}
@@ -1031,23 +1124,9 @@ export default function App() {
           </div>
         )}
 
-        {/* Client-Side Privacy & Legal Notice Footer */}
-        <footer className="pt-6 border-t border-stone-200/80 text-stone-500 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 font-sans">
-          <div className="flex items-center gap-2">
-            <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span>
-              <strong>Zero Cloud Storage:</strong> All calculations run 100% locally in your browser. No patient data is transmitted or stored externally.
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleOpenDisclaimer}
-            className="text-stone-800 hover:text-stone-950 font-medium underline flex items-center gap-1 shrink-0 transition-colors"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
-            <span>Clinical Reference &amp; Privacy Notice</span>
-          </button>
+        {/* Minimalist Bedside Footer */}
+        <footer className="pt-4 pb-2 text-center text-xs text-slate-400 font-sans border-t border-slate-100/80">
+          <p>PediCal &middot; Offline Clinical Tool &middot; Settings for Policies &amp; Contact</p>
         </footer>
       </main>
 
@@ -1085,16 +1164,37 @@ export default function App() {
           setShowPrintModal(true);
         }}
         onOpenDisclaimer={handleOpenDisclaimer}
+        onOpenLegal={handleOpenLegal}
         patients={patients}
       />
 
-      {/* Clinical Disclaimer & Terms Modal */}
+      {/* Clinical Disclaimer & Terms Modal (Voluntary In-Session Review) */}
       <ClinicalDisclaimerModal
-        isOpen={showDisclaimerModal}
+        isOpen={showDisclaimerModal && isVoluntaryDisclaimerReview}
         onAccept={handleAcceptDisclaimer}
         onClose={() => setShowDisclaimerModal(false)}
-        isVoluntaryReview={isVoluntaryDisclaimerReview}
+        onDecline={() => setShowDisclaimerModal(false)}
+        isVoluntaryReview={true}
       />
+
+      {/* Complete Legal, Privacy & Contact Information Modal */}
+      <LegalAndPrivacyModal
+        isOpen={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+        initialTab={legalModalTab}
+      />
+
+      {/* Clinical Safety & Guardrail Inspector Modal */}
+      {safetyAudit && (
+        <ClinicalSafetyInspectorModal
+          isOpen={showSafetyInspector}
+          onClose={() => setShowSafetyInspector(false)}
+          auditResult={safetyAudit}
+          onApplyPatch={handleApplySafetyPatch}
+          patientName={activePatient?.name}
+          cotNumber={activePatient?.cotNumber}
+        />
+      )}
 
       {/* Pediatric Reminders Center Modal */}
       <RemindersModal
@@ -1110,7 +1210,7 @@ export default function App() {
         activePatientId={activePatientId}
       />
 
-      {/* Security PIN Lock Screen Overlay (Zero Unauthorized Access) */}
+      {/* Security PIN Lock Screen Overlay (Zero Unauthorized Access with Master Key Recovery) */}
       {isLocked && settings.pinLockEnabled && (
         <PinLockScreen
           facilityName={settings.facilityName}
@@ -1119,6 +1219,7 @@ export default function App() {
           recoveryKey={settings.recoveryKey}
           onUnlock={() => setLockState(false)}
           onEmergencyWipe={handleEmergencyWipe}
+          onPinReset={handlePinReset}
         />
       )}
     </div>

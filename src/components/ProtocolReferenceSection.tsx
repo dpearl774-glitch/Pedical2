@@ -37,12 +37,15 @@ export const ProtocolReferenceSection: React.FC = () => {
               <span>GHS IMAM</span>
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold">
-              <span>WHO 2023</span>
+              <span>WHO 2023 Guidelines</span>
+            </span>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-semibold">
+              <span>WHO Sept 2026 Guidance</span>
             </span>
           </div>
         </div>
         <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-          Ghana Health Service IMAM national guidelines and WHO 2023 acute malnutrition standards.
+          Ghana Health Service IMAM national protocols, WHO 2023 Malnutrition Guidelines, and WHO 17 September 2026 Implementation Guidance (covering Inpatient/Outpatient Care &amp; Infants &lt;6m).
         </p>
       </div>
 
@@ -138,10 +141,10 @@ export const ProtocolReferenceSection: React.FC = () => {
           <div className="p-3.5 bg-teal-50/60 rounded-xl border border-teal-200 space-y-1">
             <div className="font-bold text-teal-950 flex items-center gap-2">
               <span className="px-1.5 py-0.5 rounded bg-teal-200 text-teal-900 text-[10px] font-bold">Step 3</span>
-              <span>Dehydration &amp; ReSoMal Administration</span>
+              <span>Dehydration vs. Circulatory Shock Emergency</span>
             </div>
             <p className="text-teal-900 text-[11px] leading-relaxed">
-              Administer <strong>ReSoMal 5 mL/kg every 30 min for 2 hours</strong>, then 5–10 mL/kg/h alternating hourly with F-75. <strong>STRICT CONTRAINDICATION:</strong> Never give ReSoMal or IV fluids for children with nutritional oedema unless confirmed cholera/watery diarrhea. Standard ORS is contraindicated due to fatal sodium overload.
+              <strong>Dehydration without shock:</strong> Give <strong>ReSoMal 5 mL/kg q30m for 2 hours</strong>, then 5–10 mL/kg/h alternating hourly with F-75. <strong>Circulatory Shock (Emergency):</strong> If child is lethargic with cold extremities, CRT &gt; 3s, and weak/rapid pulse, oral fluids cannot be given; infuse <strong>Half-strength Darrow&apos;s or Ringer&apos;s Lactate + 5% Dextrose at 15 mL/kg over 1 hour</strong> with 10-minute cardiac surveillance. <strong>Bilateral Oedema:</strong> Rehydration contraindicated unless confirmed profuse watery diarrhea.
             </p>
           </div>
 
@@ -323,6 +326,182 @@ export const ProtocolReferenceSection: React.FC = () => {
         </div>
       </div>
 
+      {/* 4B. The Two Types of F-75: Standard (Non-Cereal) vs. Cereal-Based (Low Osmolality) */}
+      <div className="p-4.5 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/70 via-white to-sky-50/50 space-y-3.5">
+        <div className="flex items-center gap-2">
+          <Layers className="w-5 h-5 text-blue-700" />
+          <div>
+            <h3 className="text-sm font-bold text-blue-950">
+              The Two Types of F-75 Therapeutic Milk: Standard (Non-Cereal) vs. Cereal-Based
+            </h3>
+            <p className="text-[11px] text-blue-800">
+              WHO Inpatient Malnutrition Protocols &amp; Ghana Health Service IMAM Phase 1 Guidelines
+            </p>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-700 leading-relaxed">
+          Under WHO and Ghana Health Service guidelines, <strong>F-75 is formulated in two distinct recipes</strong> for Phase 1 inpatient stabilization. Both provide 75 kcal/100 mL and 0.9–1.1 g protein/100 mL, but differ in simple sugar content, cereal starch, and osmolality:
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+          {/* Type A: Standard (Milk-Based / Non-Cereal) F-75 */}
+          <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2.5 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />
+                <span>Type 1: Standard F-75 (Non-Cereal)</span>
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-bold">
+                ~333 mOsm/kg
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Routine Stabilization Formula:</strong> Prepared with milk powder, vegetable oil, white commercial sugar (70g/L), CMV, and safe water. Contains <strong>0g cereal flour</strong>.
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] space-y-1">
+              <div className="font-semibold text-slate-800">Ingredients (per 1,000 mL batch):</div>
+              <ul className="text-slate-600 list-disc list-inside space-y-0.5">
+                <li>Dried Skimmed Milk: <strong>25 g</strong> (or Whole Milk Powder 35 g)</li>
+                <li>Commercial White Sugar: <strong>70 g</strong></li>
+                <li>Vegetable Oil: <strong>30 g</strong> (20g with whole milk or fresh milk)</li>
+                <li>Cereal Flour: <strong>0 g (None)</strong></li>
+                <li>CMV Liquid Solution: <strong>20 mL</strong> (or 1 red scoop)</li>
+              </ul>
+            </div>
+
+            <div className="text-[11px] text-slate-700 space-y-1">
+              <div>&bull; <strong>Preparation:</strong> Whisk with warm, safe pre-boiled water to dissolve. <em>Do NOT boil once milk powder is added</em> (excessive heat denatures therapeutic milk proteins).</div>
+              <div>&bull; <strong>Clinical Role:</strong> Primary Phase 1 formula to restore cellular homeostasis, liver glycogen, and avoid sodium/protein overload. Safe for infants &lt;6m.</div>
+            </div>
+          </div>
+
+          {/* Type B: Cereal-Based F-75 (Low-Osmolality) */}
+          <div className="p-4 rounded-xl bg-white border border-teal-200 space-y-2.5 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-teal-950 text-xs flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-teal-600 inline-block" />
+                <span>Type 2: Cereal-Based F-75 (Low Osmolality)</span>
+              </span>
+              <span className="px-2 py-0.5 rounded bg-teal-100 text-teal-800 text-[10px] font-bold">
+                ~280 mOsm/kg (Isotonic)
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Osmotic Diarrhea Protection:</strong> Replaces 50% of the simple sugar with cooked cereal flour (35g rice, maize, or oat flour). Boiling hydrolyzes starch into low-osmolar dextrins, reducing osmolality from ~333 to ~280 mOsm/kg.
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-teal-50/50 border border-teal-200 text-[11px] space-y-1">
+              <div className="font-semibold text-teal-950">Ingredients (per 1,000 mL batch):</div>
+              <ul className="text-teal-900 list-disc list-inside space-y-0.5">
+                <li>Dried Skimmed Milk: <strong>25 g</strong> (or Whole Milk Powder 35 g)</li>
+                <li>Commercial White Sugar: <strong>35 g</strong> (50% reduction in simple sugar!)</li>
+                <li>Cereal Flour (Cooked Rice / Maize / Oat): <strong>35 g</strong></li>
+                <li>Vegetable Oil: <strong>30 g</strong> (20g with whole milk)</li>
+                <li>CMV Liquid Solution: <strong>20 mL</strong></li>
+              </ul>
+            </div>
+
+            <div className="text-[11px] text-slate-700 space-y-1">
+              <div>&bull; <strong>Preparation:</strong> Mix cereal flour and sugar with cold safe water and <em>boil gently for 4–5 minutes</em> to gelatinize starch. Cool below 40&deg;C, then whisk in milk powder, vegetable oil, and CMV. Top up to volume.</div>
+              <div>&bull; <strong>Clinical Indication:</strong> Used when standard F-75 triggers severe osmotic diarrhea, persistent watery stools, or carbohydrate intolerance during Phase 1 stabilization.</div>
+              <div>&bull; <strong className="text-rose-700">CONTRAINDICATION:</strong> <em>Strictly contraindicated in infants &lt;6 months</em> because infants under 6 months lack pancreatic alpha-amylase to digest cereal starches.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4C. The Two Types of F-100: Standard (Non-Cereal) vs. Cereal-Based (Low Osmolality) */}
+      <div className="p-4.5 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/50 space-y-3.5">
+        <div className="flex items-center gap-2">
+          <Layers className="w-5 h-5 text-indigo-700" />
+          <div>
+            <h3 className="text-sm font-bold text-indigo-950">
+              The Two Types of F-100 Therapeutic Milk: Standard (Non-Cereal) vs. Cereal-Based
+            </h3>
+            <p className="text-[11px] text-indigo-800">
+              WHO Inpatient Malnutrition Protocols &amp; Ghana Health Service IMAM Guidelines
+            </p>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-700 leading-relaxed">
+          WHO and national IMAM guidelines establish <strong>two distinct preparations of F-100</strong> for rehabilitation and transition phase. Clinicians must distinguish between them based on diarrhea tolerance and the child&apos;s age:
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+          {/* Type A: Standard (Milk-Based / Non-Cereal) F-100 */}
+          <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2.5 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />
+                <span>Type 1: Standard F-100 (Non-Cereal)</span>
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-bold">
+                ~419 mOsm/kg
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Routine Rehabilitation Formula:</strong> Prepared with milk powder, vegetable oil, white commercial sugar (50g/L), CMV, and safe water. Contains <strong>0g cereal flour</strong>.
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] space-y-1">
+              <div className="font-semibold text-slate-800">Ingredients (per 1,000 mL batch):</div>
+              <ul className="text-slate-600 list-disc list-inside space-y-0.5">
+                <li>Dried Skimmed Milk: <strong>80 g</strong> (or Whole Milk Powder 110 g)</li>
+                <li>Commercial White Sugar: <strong>50 g</strong> (75g with fresh cow milk)</li>
+                <li>Vegetable Oil: <strong>60 g</strong> (30g with whole milk, 20g fresh)</li>
+                <li>Cereal Flour: <strong>0 g (None)</strong></li>
+                <li>CMV Liquid Solution: <strong>20 mL</strong> (or 1 red scoop)</li>
+              </ul>
+            </div>
+
+            <div className="text-[11px] text-slate-700 space-y-1">
+              <div>&bull; <strong>Preparation:</strong> Whisk with warm, safe pre-boiled water to dissolve. <em>Do NOT boil after adding milk powder</em> (excessive heat denatures therapeutic milk proteins).</div>
+              <div>&bull; <strong>Infant Diluted F-100:</strong> Standard non-cereal F-100 is the <em>mandatory formulation used to prepare Diluted F-100</em> (100 mL F-100 + 30 mL safe water) for infants &lt;6m undergoing Supplementary Suckling Technique (SST).</div>
+            </div>
+          </div>
+
+          {/* Type B: Cereal-Based F-100 (Low-Osmolality) */}
+          <div className="p-4 rounded-xl bg-white border border-teal-200 space-y-2.5 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-teal-950 text-xs flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-teal-600 inline-block" />
+                <span>Type 2: Cereal-Based F-100 (Low Osmolality)</span>
+              </span>
+              <span className="px-2 py-0.5 rounded bg-teal-100 text-teal-800 text-[10px] font-bold">
+                ~300 mOsm/kg (Isotonic)
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-600 leading-relaxed">
+              <strong>Osmotic Diarrhea Protection:</strong> Replaces half the sugar with cooked cereal flour (rice, maize, or oat flour). Boiling hydrolyzes starch into low-osmolar dextrins, reducing osmolality from ~419 to ~300 mOsm/kg.
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-teal-50/50 border border-teal-200 text-[11px] space-y-1">
+              <div className="font-semibold text-teal-950">Ingredients (per 1,000 mL batch):</div>
+              <ul className="text-teal-900 list-disc list-inside space-y-0.5">
+                <li>Dried Skimmed Milk: <strong>80 g</strong> (or Whole Milk Powder 110 g)</li>
+                <li>Commercial White Sugar: <strong>25 g</strong> (50% reduced sugar!)</li>
+                <li>Cereal Flour (Rice / Maize / Oat): <strong>35 g</strong></li>
+                <li>Vegetable Oil: <strong>60 g</strong> (or 30g with whole milk)</li>
+                <li>CMV Liquid Solution: <strong>20 mL</strong></li>
+              </ul>
+            </div>
+
+            <div className="text-[11px] text-slate-700 space-y-1">
+              <div>&bull; <strong>Preparation:</strong> Mix cereal flour and sugar with cold safe water and <em>boil gently for 4–5 minutes</em> to gelatinize starch. Cool below 40&deg;C, then whisk in milk powder, vegetable oil, and CMV. Top up to volume.</div>
+              <div>&bull; <strong>Clinical Indication:</strong> Used when standard F-100 triggers osmotic diarrhea, watery stools, or carbohydrate malabsorption across atrophic villi.</div>
+              <div>&bull; <strong className="text-rose-700">CONTRAINDICATION:</strong> <em>Strictly contraindicated in infants &lt;6 months</em> because young infants lack pancreatic alpha-amylase to digest cereal flour.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 5. Clinical Safety Guardrails */}
       <div className="space-y-3 pt-2">
         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -353,21 +532,92 @@ export const ProtocolReferenceSection: React.FC = () => {
         </div>
       </div>
 
-      {/* 6. Regulatory Scope & Client-Side Privacy */}
+      {/* 5B. Infants Under Six Months Management Matrix (WHO Sept 2026 Guidance) */}
+      <div className="p-4.5 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-indigo-700 text-white flex items-center justify-center font-bold text-xs">
+            &lt;6m
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-indigo-950">
+              Infants Under 6 Months: Differentiated Care Pathways
+            </h3>
+            <p className="text-[11px] text-indigo-800">
+              WHO 17 September 2026 Implementation Guidance &amp; 2023 Guidelines
+            </p>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-700 leading-relaxed">
+          Infants &lt;6 months cannot be managed under a monolithic protocol. Glomerular filtration and tubular solute handling are immature, while feeding depends fundamentally on breastfeeding viability:
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="bg-white p-3 rounded-lg border border-indigo-200 space-y-1">
+            <strong className="text-indigo-950 font-bold block text-[11px]">1. Breastfed Infants</strong>
+            <p className="text-slate-600 leading-relaxed text-[11px]">
+              Priority is restoring exclusive breastfeeding. Use the <strong>Supplementary Suckling Technique (SST)</strong>: infant suckles mother&apos;s breast while drawing supplement from a cup via a fine NG tube (#8 F) taped to the nipple. First choice is <strong>Expressed Breast Milk (EBM)</strong>; if insufficient, use <strong>Diluted F-100</strong> (100 mL F-100 + 30 mL water) or commercial infant formula.
+            </p>
+          </div>
+
+          <div className="bg-white p-3 rounded-lg border border-indigo-200 space-y-1">
+            <strong className="text-indigo-950 font-bold block text-[11px]">2. Non-Breastfed Infants</strong>
+            <p className="text-slate-600 leading-relaxed text-[11px]">
+              For infants without maternal breast milk, administer generic <strong>commercial infant formula</strong> or <strong>Diluted F-100</strong> (130 mL/kg/day divided into 8 feeds). Standard undiluted F-100 and solid RUTF are strictly contraindicated due to excessive renal solute load.
+            </p>
+          </div>
+
+          <div className="bg-white p-3 rounded-lg border border-indigo-200 space-y-1">
+            <strong className="text-indigo-950 font-bold block text-[11px]">3. Edematous / Complicated</strong>
+            <p className="text-slate-600 leading-relaxed text-[11px]">
+              Infants &lt;6m with bilateral pitting oedema, hypothermia (&lt;35.5&deg;C), hypoglycemia (&lt;3.0 mmol/L), or severe lethargy require inpatient admission, Kangaroo Mother Care (KMC) for thermal control, parenteral antibiotics, and Phase 1 feeds (F-75 or Diluted F-100/EBM) with cautious fluid volume (100 mL/kg/day if severe oedema).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 5C. Refeeding Syndrome Contextual Strategy */}
+      <div className="p-4.5 rounded-xl border border-blue-200 bg-blue-50/50 space-y-3">
+        <div className="flex items-center gap-2">
+          <HeartPulse className="w-5 h-5 text-blue-700" />
+          <h3 className="text-sm font-bold text-blue-950">
+            Refeeding Syndrome: Contextual Metabolic Protection (ESPGHAN / WHO)
+          </h3>
+        </div>
+        <p className="text-xs text-slate-700 leading-relaxed">
+          Prolonged starvation depletes total body stores of phosphorus, potassium, and magnesium. Rapid carbohydrate or caloric loading drives insulin release, shunting electrolytes intracellularly and causing cardiac arrhythmias, neuromuscular collapse, and pulmonary edema.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div className="bg-white p-3 rounded-lg border border-blue-200 space-y-1">
+            <strong className="text-blue-950 font-bold block text-[11px]">Standard Phase 1 F-75 Buffer (~80–100 kcal/kg/day)</strong>
+            <p className="text-slate-600 leading-relaxed text-[11px]">
+              Standard F-75 (130 mL/kg/day, or 100 mL/kg/day in severe oedema) was specifically designed by WHO to provide low protein (0.9 g/100 mL) and low sodium to safely stabilize metabolism without provoking refeeding collapse. Arbitrary mechanical calorie restrictions should not delay standard Phase 1 initiation.
+            </p>
+          </div>
+          <div className="bg-white p-3 rounded-lg border border-blue-200 space-y-1">
+            <strong className="text-blue-950 font-bold block text-[11px]">Electrolyte Repletion &amp; Iron Prohibition</strong>
+            <p className="text-slate-600 leading-relaxed text-[11px]">
+              Ensure therapeutic feeds include CMV (providing potassium, magnesium, and phosphate). <strong>Never administer iron during Phase 1 stabilization</strong>; iron promotes bacterial sepsis and reactive oxygen tissue injury. Monitor cardiopulmonary vitals (RR, pulse, chest signs) every 4 hours.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Regulatory Scope, Clinical Governance & Privacy */}
       <div className="p-4 rounded-xl border border-slate-300 bg-slate-50 space-y-2.5 text-xs">
         <div className="font-bold text-slate-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
           <ShieldCheck className="w-4 h-4 text-emerald-700" />
-          <span>Clinical Decision Support Scope &amp; Privacy Architecture</span>
+          <span>Clinical Governance, Evidence Validity &amp; CDS Architecture</span>
         </div>
         <div className="space-y-1.5 text-slate-600 leading-relaxed">
           <div>
-            &bull; <strong>Clinical Decision Support (CDS) Scope:</strong> pedical is an open, deterministic calculation reference tool developed strictly according to the {GHANA_IMAM_GUIDELINE_TITLE} and the {WHO_GUIDELINE_FULL_TITLE}. It provides transparent arithmetic and does not make automated autonomous medical diagnoses, prescriptions, or treatment decisions.
+            &bull; <strong>Software Verification vs. Empirical Clinical Validity:</strong> PediCal&apos;s automated unit tests demonstrate that programmed formulas, volume limits, and interlocks execute deterministically without software regression. Automated software tests do NOT, by themselves, prove empirical clinical correctness. Clinical validity is established through the peer-reviewed evidence base: WHO 2023 Guidelines, WHO 17 September 2026 Implementation Guidance, and Ghana Health Service IMAM Protocols.
           </div>
           <div>
-            &bull; <strong>Professional Verification:</strong> All calculations, fluid volumes, and raw ingredient recipes must be reviewed and verified by a licensed Registered Dietitian (RD) or Pediatric Medical Officer against local hospital protocols prior to clinical administration.
+            &bull; <strong>Clinical Decision Support (CDS) Scope:</strong> PediCal is an open, deterministic calculation reference tool. It does not provide autonomous medical diagnosis, prescribing, or treatment decisions. All calculations, fluid volumes, and raw ingredient recipes must be reviewed and verified by a licensed Registered Dietitian (RD) or Pediatric Medical Officer against individual patient bedside findings.
           </div>
           <div>
-            &bull; <strong>Zero Cloud Storage / Client-Side Privacy:</strong> All calculations and bed roster entries are executed and retained exclusively within the clinician&apos;s local browser session. No patient health information (PHI) or personal data is collected, transmitted, or hosted on external servers.
+            &bull; <strong>Zero Cloud Storage / Client-Side Privacy:</strong> All calculations and bed roster entries are executed and retained exclusively within the clinician&apos;s local browser session using AES-GCM 256-bit client-side encryption. No patient health information (PHI) is collected, transmitted, or stored on remote cloud servers.
           </div>
         </div>
       </div>
